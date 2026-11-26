@@ -97,6 +97,7 @@ export const en = {
   'หมวด': 'Category',
   'แบบการเตือน': 'Reminder type',
   'ตามระยะ km หรือเดือน': 'By km or months',
+  'ตรวจหรือล้างตามระยะ km หรือเดือน': 'Inspect or clean by km or months',
   'ตามจำนวนวัน (เตือนเบา ๆ เช่น แบต)': 'By days (soft reminder, e.g. battery)',
   'ทุกปีในเดือนที่กำหนด': 'Every year in a set month',
   'จดอายุอย่างเดียว ไม่เตือน': 'Track age only, no reminder',

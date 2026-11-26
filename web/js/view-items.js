@@ -10,6 +10,7 @@ import { t, tx } from '../core/i18n.js';
 // What the form calls a kind. "days" is stored as rule interval with intervalDays.
 const KINDS = {
   interval: tx('ตามระยะ km หรือเดือน'),
+  inspect: tx('ตรวจหรือล้างตามระยะ km หรือเดือน'),
   days: tx('ตามจำนวนวัน (เตือนเบา ๆ เช่น แบต)'),
   calendar: tx('ทุกปีในเดือนที่กำหนด'),
   record: tx('จดอายุอย่างเดียว ไม่เตือน'),
@@ -18,13 +19,12 @@ const KINDS = {
 
 const kindOf = (item) => {
   if (item.rule === 'interval' && item.intervalDays) return 'days';
-  if (item.rule === 'inspect') return 'interval';
   return item.rule;
 };
 
 const ruleSummary = (item) => {
   const kind = kindOf(item);
-  if (kind === 'interval') return t('ทุก {km} km หรือ {months} เดือน', { km: formatKm(item.intervalKm), months: item.intervalMonths });
+  if (kind === 'interval' || kind === 'inspect') return t('ทุก {km} km หรือ {months} เดือน', { km: formatKm(item.intervalKm), months: item.intervalMonths });
   if (kind === 'days') return t('ราว {days} วัน', { days: item.intervalDays });
   if (kind === 'calendar') return t('ทุกปี เดือนที่ {month}', { month: item.calendarMonth });
   return t(KINDS[kind]);
@@ -85,6 +85,7 @@ export const renderItems = (ctx) => {
 
 const KIND_FIELDS = {
   interval: ['intervalKm', 'intervalMonths'],
+  inspect: ['intervalKm', 'intervalMonths'],
   days: ['intervalDays'],
   calendar: ['calendarMonth'],
   record: [],
