@@ -11,6 +11,7 @@ the battery and more are due. Works for any make and model. Free.
 - Add, edit or remove items in the app, no coding
 - Optional daily reminders in Discord
 - Thai or English: switch any time in Settings
+- Several cars in one account, with an overview of all of them together
 
 Your car data stays private in your own GitHub account.
 
@@ -108,6 +109,7 @@ Settings > Manage car and items.
 | See the car's whole story | **Timeline** |
 | Add an item or change an interval | **Settings** > **Manage car and items** |
 | Change the language | **Settings** > Language (also used for Discord messages) |
+| Add another car | **Settings** > Add a car (the overview then shows every car) |
 
 Install it as an app:
 - iPhone: open in Safari, then Share > Add to Home Screen

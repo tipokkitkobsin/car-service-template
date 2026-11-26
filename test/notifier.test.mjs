@@ -78,3 +78,15 @@ test('reminder messages follow the chosen language', async () => {
   assert.match(message.content, /What is the odometer now/);
   assert.equal(message.components[0].components[0].label, 'Enter odometer');
 });
+
+test('with several cars, a message starts with the car name and its button names the car', () => {
+  const message = formatMessage({ kind: 'askKm', estimateKm: 1000, lastReadingDate: null }, 'https://x/', { id: 'yaris', name: 'Yaris' });
+  assert.match(message.content, /^\*\*Yaris\*\*\n/);
+  const kmButton = message.components[0].components.find((button) => button.custom_id);
+  assert.equal(kmButton.custom_id, 'km:open:yaris');
+});
+
+test('the first car keeps the old button id, so old messages still work', () => {
+  const message = formatMessage({ kind: 'askKm', estimateKm: 1000, lastReadingDate: null }, 'https://x/', { id: 'main', name: 'Civic' });
+  assert.equal(message.components[0].components.find((button) => button.custom_id).custom_id, 'km:open');
+});

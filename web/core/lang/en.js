@@ -320,6 +320,21 @@ export const en = {
   'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง': 'Something went wrong. Please try again',
   'คำสั่งนี้ใช้ได้เฉพาะเจ้าของรถในห้องที่กำหนด': 'Only the car owner can use this, in the set channel',
 
+  // Several cars
+  'รถทั้งหมด': 'All cars',
+  'เพิ่มรถ': 'Add a car',
+  'เลือกรถ': 'Choose car',
+  'ทุกอย่างปกติ': 'All good',
+  'และอีก {count} รายการ': 'and {count} more',
+  'ดูรายละเอียด': 'Details',
+  'รถ': 'Cars',
+  'ลบรถคันนี้': 'Delete this car',
+  'มีรถ {count} คัน ถ้ามีหลายคัน หน้าภาพรวมจะแสดงทุกคันพร้อมกัน': '{count} car(s). With more than one, the overview shows them all together',
+  'ลบรถ {name} และประวัติทั้งหมดของคันนี้? ย้อนกลับได้จากประวัติ commit เท่านั้น': 'Delete {name} and all its history? It can only be restored from the commit history',
+
+  'รถคันไหน (ถ้ามีหลายคัน)': 'Which car (if you have several)',
+  'มีรถหลายคัน เลือกด้วยตัวเลือก car: {names}': 'You have several cars. Choose one with the car option: {names}',
+
   // Page chrome
   'เช็คระยะ': 'Car service',
   'ข้ามไปเนื้อหา': 'Skip to content',

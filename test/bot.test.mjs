@@ -84,3 +84,35 @@ test('statusText includes how long recorded parts have been used', async () => {
   }));
   assert.match(await statusText({ store, today: '2026-11-24' }), /Tyre.*ใช้มา 1 ปี · 10,000 km/);
 });
+
+const garageOf = (cars) => ({
+  listCars: async () => cars.map((car) => car.id),
+  storeFor: (id) => ({ load: async () => ({ data: cars.find((car) => car.id === id).data }) }),
+});
+
+test('pickCar uses the only car, or the one asked for by id or name', async () => {
+  const { pickCar } = await import('../bot/src/handlers.mjs');
+  const cars = [{ id: 'main', name: 'Civic' }, { id: 'yaris', name: 'Toyota Yaris' }];
+  assert.equal(pickCar([cars[0]], null), 'main');
+  assert.equal(pickCar(cars, 'yaris'), 'yaris');
+  assert.equal(pickCar(cars, 'toyota yaris'), 'yaris');
+  assert.equal(pickCar(cars, null), null);
+  assert.equal(pickCar(cars, 'nope'), null);
+});
+
+test('statusAll shows every car with its name when there are several', async () => {
+  const { statusAll } = await import('../bot/src/handlers.mjs');
+  const civic = makeData({ car: { ...makeData().car, name: 'Civic' }, readings: [{ date: '2026-11-01', km: 140000 }] });
+  const yaris = makeData({ car: { ...makeData().car, name: 'Yaris' } });
+  const text = await statusAll({ garage: garageOf([{ id: 'main', data: civic }, { id: 'yaris', data: yaris }]), today: '2026-11-26' });
+  assert.match(text, /\*\*Civic\*\*/);
+  assert.match(text, /\*\*Yaris\*\*/);
+  assert.ok(text.length <= 1900);
+});
+
+test('statusAll with one car looks like before, with no car name', async () => {
+  const { statusAll } = await import('../bot/src/handlers.mjs');
+  const civic = makeData({ car: { ...makeData().car, name: 'Civic' } });
+  const text = await statusAll({ garage: garageOf([{ id: 'main', data: civic }]), today: '2026-11-26' });
+  assert.doesNotMatch(text, /\*\*Civic\*\*/);
+});

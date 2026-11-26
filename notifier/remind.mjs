@@ -1,12 +1,11 @@
 // Daily job. Run by .github/workflows/remind.yml with the data repo checked out as the working directory.
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { todayInBangkok } from '../web/core/schedule.js';
 import { runReminders } from './run.js';
 import { readJson } from './state.js';
+import { carIdFromFile, carPath, MAIN_CAR, stateFileFor } from '../web/core/garage.js';
 import { setLanguage, t } from '../web/core/i18n.js';
 
-const DATA_FILE = 'data/car.json';
-const STATE_FILE = 'data/reminder-state.json';
 const DISCORD_API = 'https://discord.com/api/v10';
 const MAX_RETRY_SECONDS = 30;
 
@@ -40,26 +39,43 @@ const testMessage = () => ({
   allowed_mentions: { parse: [] },
 });
 
+const listCarIds = async () => {
+  const names = await readJson(async () => JSON.stringify(await readdir('data')), []);
+  return names.map(carIdFromFile).filter(Boolean).sort((a, b) => (a === MAIN_CAR ? -1 : b === MAIN_CAR ? 1 : a.localeCompare(b)));
+};
+
+// One run per car, each with its own state file and language. Names are shown only when there are several cars.
+const remindCar = async ({ id, showName, send, today }) => {
+  const data = await readJson(() => readFile(carPath(id), 'utf8'), null);
+  if (!data) return;
+  setLanguage(data.car.language);
+  const stateFile = stateFileFor(id);
+  const state = await readJson(() => readFile(stateFile, 'utf8'), {});
+  const save = (next) => writeFile(stateFile, `${JSON.stringify(next, null, 2)}\n`);
+  await runReminders({
+    data, state, today, siteUrl: requireEnv('SITE_URL'), send, save, car: showName ? { id, name: data.car.name } : null,
+  });
+};
+
 const main = async () => {
   const send = createSender(requireEnv('DISCORD_BOT_TOKEN'), requireEnv('DISCORD_CHANNEL_ID'));
-  const data = await readJson(() => readFile(DATA_FILE, 'utf8'), null);
-  // Messages follow the language saved with the car data.
-  setLanguage(data?.car.language);
+  const ids = await listCarIds();
   if (process.env.REMIND_TEST === 'true') {
+    const first = ids.length ? await readJson(() => readFile(carPath(ids[0]), 'utf8'), null) : null;
+    setLanguage(first?.car.language);
     await send(testMessage());
     console.log('Test message sent');
     return;
   }
-  if (!data) {
+  if (ids.length === 0) {
     console.log('No car data yet: open the site and finish the first-run setup');
     return;
   }
-  const state = await readJson(() => readFile(STATE_FILE, 'utf8'), {});
   await mkdir('data', { recursive: true });
-  const save = (next) => writeFile(STATE_FILE, `${JSON.stringify(next, null, 2)}\n`);
-  await runReminders({
-    data, state, today: todayInBangkok(), siteUrl: requireEnv('SITE_URL'), send, save,
-  });
+  const today = todayInBangkok();
+  for (const id of ids) {
+    await remindCar({ id, showName: ids.length > 1, send, today });
+  }
 };
 
 main().catch((error) => {

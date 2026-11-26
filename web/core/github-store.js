@@ -1,5 +1,7 @@
 // Reads and writes one JSON file through the GitHub Contents API.
 import { t } from './i18n.js';
+import { carIdFromFile, carPath, MAIN_CAR } from './garage.js';
+
 const API = 'https://api.github.com';
 const MAX_ATTEMPTS = 3;
 const CHUNK_SIZE = 32768;
@@ -94,5 +96,31 @@ export const createStore = ({ owner, repo, path, token, fetchFn = (...args) => f
     throw new StoreError('conflict', t('ข้อมูลถูกแก้จากที่อื่นพร้อมกัน ลองใหม่อีกครั้ง'));
   };
 
-  return { load, save, create, repoStatus, update };
+  const listFolder = async (folder) => {
+    const body = await request(`${repoUrl}/contents/${folder}`, { method: 'GET' });
+    return Array.isArray(body) ? body : [];
+  };
+
+  const remove = async (message) => {
+    const { sha } = await load();
+    await request(url, { method: 'DELETE', body: JSON.stringify({ message, sha }) });
+  };
+
+  return { load, save, create, remove, listFolder, repoStatus, update };
+};
+
+// All cars in one data repo. Each car is its own file, so each has its own store.
+export const createGarage = ({ owner, repo, token, fetchFn }) => {
+  const storeFor = (id) => createStore({ owner, repo, path: carPath(id), token, fetchFn });
+  const listCars = async () => {
+    try {
+      const entries = await storeFor(MAIN_CAR).listFolder('data');
+      return entries.filter((entry) => entry.type === 'file').map((entry) => carIdFromFile(entry.name)).filter(Boolean)
+        .sort((a, b) => (a === MAIN_CAR ? -1 : b === MAIN_CAR ? 1 : a.localeCompare(b)));
+    } catch (error) {
+      if (error.code === 'missing') return [];
+      throw error;
+    }
+  };
+  return { listCars, storeFor };
 };

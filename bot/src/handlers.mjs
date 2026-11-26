@@ -53,20 +53,42 @@ export const undoKm = async ({ date, km, store }) => {
   return t('ลบเลขไมล์ {km} km ของวันที่ {date} แล้ว', { km: formatKm(km), date });
 };
 
-export const statusText = async ({ store, today }) => {
-  const { data } = await store.load();
+// Status lines for one car. Part ages are left out when several cars must share one reply.
+const carStatus = (data, today, withAges) => {
   const estimate = estimateKm(data, today);
   const all = sortByUrgency(buildStatuses(data, today));
   const rows = all.filter((row) => ['overdue', 'watch', 'check', 'soon'].includes(row.state));
   const lines = rows.map((row) => `• **${row.item.name}** ${row.state === 'check' ? t('ต้องตรวจ') : `${dueText(row)} (${leftText(row)})`}`);
-  const ages = all
+  const ages = withAges ? all
     .map((row) => ({ row, usage: row.state === 'record' ? usageOf(row, data, today) : null }))
     .filter(({ usage }) => usage)
-    .map(({ row, usage }) => `• **${row.item.name}** ${usageText(usage)}`);
+    .map(({ row, usage }) => `• **${row.item.name}** ${usageText(usage)}`) : [];
   const head = (estimate.isEstimated ? t('เลขไมล์ประมาณ {km} km', { km: formatKm(estimate.km) }) : t('เลขไมล์ {km} km', { km: formatKm(estimate.km) }));
   return [
     head,
     ...(lines.length ? lines : [t('ไม่มีงานค้าง')]),
     ...(ages.length ? ['', t('**อายุการใช้งาน**'), ...ages] : []),
-  ].join('\n').slice(0, MAX_REPLY);
+  ].join('\n');
+};
+
+export const statusText = async ({ store, today }) => {
+  const { data } = await store.load();
+  return carStatus(data, today, true).slice(0, MAX_REPLY);
+};
+
+// Every car in the data repo. One car looks exactly like before; several get a name heading each.
+export const statusAll = async ({ garage, today }) => {
+  const ids = await garage.listCars();
+  const cars = await Promise.all(ids.map(async (id) => (await garage.storeFor(id).load()).data));
+  if (cars.length === 1) return carStatus(cars[0], today, true).slice(0, MAX_REPLY);
+  return cars.map((data) => `**${data.car.name}**\n${carStatus(data, today, false)}`).join('\n\n').slice(0, MAX_REPLY);
+};
+
+const normalise = (text) => String(text ?? '').trim().toLowerCase();
+
+// The car id for /km: the only car, or the one named by id or car name. Null when it cannot tell.
+export const pickCar = (cars, requested) => {
+  if (!requested) return cars.length === 1 ? cars[0].id : null;
+  const wanted = normalise(requested);
+  return cars.find((car) => car.id === wanted || normalise(car.name) === wanted)?.id ?? null;
 };

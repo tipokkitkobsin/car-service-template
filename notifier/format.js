@@ -1,6 +1,7 @@
 // Turns a planned reminder into a Discord message.
 import { dueText, formatDate, formatKm, leftText } from '../web/core/schedule.js';
 import { t, tx } from '../web/core/i18n.js';
+import { MAIN_CAR } from '../web/core/garage.js';
 
 const MAX_CONTENT = 2000;
 const RESERVED = 120;
@@ -29,7 +30,13 @@ const fitLines = (lines) => {
 };
 
 const linkButton = (siteUrl) => ({ type: BUTTON, style: STYLE_LINK, label: t('เปิดเว็บ'), url: siteUrl });
-const kmButton = () => ({ type: BUTTON, style: STYLE_PRIMARY, label: t('กรอกเลขไมล์'), custom_id: 'km:open' });
+// The first car keeps the plain id, so buttons in messages sent before multi-car support still work.
+const kmButton = (car) => ({
+  type: BUTTON, style: STYLE_PRIMARY, label: t('กรอกเลขไมล์'), custom_id: !car || car.id === MAIN_CAR ? 'km:open' : `km:open:${car.id}`,
+});
+
+// With several cars, each message starts with the car's name.
+const withCarName = (content, car) => (car ? `**${car.name}**\n${content}` : content);
 
 const payload = (content, buttons) => ({
   content,
@@ -37,14 +44,14 @@ const payload = (content, buttons) => ({
   components: [{ type: ACTION_ROW, components: buttons }],
 });
 
-export const formatMessage = (message, siteUrl) => {
+export const formatMessage = (message, siteUrl, car = null) => {
   if (message.kind === 'askKm') {
     const since = message.lastReadingDate ? t(' จดล่าสุด {date}', { date: formatDate(message.lastReadingDate) }) : '';
-    return payload(
-      t('**ตอนนี้เลขไมล์เท่าไหร่?**\nระบบประมาณไว้ {km} km{since}\nกดปุ่ม หรือพิมพ์ `/km 115000`', { km: formatKm(message.estimateKm), since }),
-      [kmButton(), linkButton(siteUrl)],
+    return payload(withCarName(
+      t('**ตอนนี้เลขไมล์เท่าไหร่?**\nระบบประมาณไว้ {km} km{since}\nกดปุ่ม หรือพิมพ์ `/km 115000`', { km: formatKm(message.estimateKm), since }), car),
+      [kmButton(car), linkButton(siteUrl)],
     );
   }
   const lines = fitLines(message.rows.map(lineFor));
-  return payload([t(TITLES[message.kind]), ...lines].join('\n'), [linkButton(siteUrl), kmButton()]);
+  return payload(withCarName([t(TITLES[message.kind]), ...lines].join('\n'), car), [linkButton(siteUrl), kmButton(car)]);
 };

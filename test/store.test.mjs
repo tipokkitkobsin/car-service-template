@@ -64,3 +64,29 @@ test('repoStatus tells private, public and missing repos apart', async () => {
   assert.equal(await answer(404, {}).repoStatus(), 'missing');
   await assert.rejects(answer(401, {}).repoStatus(), { code: 'auth' });
 });
+
+test('listCars reads the car files in data/ and ignores other files', async () => {
+  const { createGarage } = await import('../web/core/github-store.js');
+  const listing = [
+    { name: 'car.json', type: 'file' }, { name: 'car-yaris.json', type: 'file' },
+    { name: 'reminder-state.json', type: 'file' }, { name: 'car-x', type: 'dir' },
+  ];
+  const garage = createGarage({ owner: 'o', repo: 'r', token: 't', fetchFn: async (url) => { assert.ok(url.endsWith('/contents/data')); return json(200, listing); } });
+  assert.deepEqual(await garage.listCars(), ['main', 'yaris']);
+});
+
+test('listCars is empty when the data folder does not exist yet', async () => {
+  const { createGarage } = await import('../web/core/github-store.js');
+  const garage = createGarage({ owner: 'o', repo: 'r', token: 't', fetchFn: async () => json(404, {}) });
+  assert.deepEqual(await garage.listCars(), []);
+});
+
+test('remove deletes the file with its current sha', async () => {
+  const calls = [];
+  const fetchFn = async (url, options = {}) => {
+    calls.push([options.method, options.body ? JSON.parse(options.body) : null]);
+    return options.method === 'DELETE' ? json(200, {}) : json(200, { content: encodeJson({ a: 1 }), sha: 'abc' });
+  };
+  await createStore({ ...config, fetchFn }).remove('car: delete');
+  assert.deepEqual(calls[1], ['DELETE', { message: 'car: delete', sha: 'abc' }]);
+});

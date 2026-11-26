@@ -1,4 +1,5 @@
-import { field, h } from './dom.js';
+import { confirmDialog, field, h } from './dom.js';
+import { MAIN_CAR } from '../core/garage.js';
 import { getLanguage, LANGUAGES } from '../core/i18n.js';
 import { clearToken, readSource } from './session.js';
 import { t } from '../core/i18n.js';
@@ -54,6 +55,29 @@ export const renderLogin = ({ onToken, onLanguage, message }) => {
     button);
 };
 
+// Add another car, or delete the current one. The first car (car.json) cannot be deleted here.
+const carsSection = (ctx) => {
+  const remove = ctx.carId === MAIN_CAR ? null : h('button', {
+    class: 'btn btn-danger',
+    type: 'button',
+    onClick: async () => {
+      if (!await confirmDialog(t('ลบรถ {name} และประวัติทั้งหมดของคันนี้? ย้อนกลับได้จากประวัติ commit เท่านั้น', { name: ctx.data.car.name }), t('ลบ'))) return;
+      try {
+        await ctx.deleteCar();
+        ctx.toast(t('ลบแล้ว'));
+      } catch (failure) {
+        ctx.toast(failure.message);
+      }
+    },
+  }, t('ลบรถคันนี้'));
+  return h('section', { class: 'card stack' },
+    h('h2', {}, t('รถ')),
+    h('p', { class: 'muted' }, t('มีรถ {count} คัน ถ้ามีหลายคัน หน้าภาพรวมจะแสดงทุกคันพร้อมกัน', { count: ctx.cars.length })),
+    h('div', { class: 'actions' },
+      h('a', { class: 'btn', href: '#/add-car' }, t('เพิ่มรถ')),
+      remove));
+};
+
 const backup = (data) => {
   const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
   const link = h('a', { href: url, download: 'car-service-backup.json' });
@@ -76,6 +100,7 @@ export const renderSettings = (ctx) => {
     h('h1', {}, t('ตั้งค่า')),
     h('section', { class: 'card stack' },
       field(`${t('ภาษา')} · Language`, 'language', language, t('ใช้กับเว็บและข้อความใน Discord'))),
+    carsSection(ctx),
     h('section', { class: 'card stack' },
       h('h2', {}, t('รถและรายการดูแล')),
       h('p', { class: 'muted' }, t('แก้ชื่อรถ รอบเช็คระยะ และเพิ่ม แก้ หรือลบรายการอะไหล่')),

@@ -9,7 +9,9 @@ const markSent = (state, next, kind) => {
 };
 
 // Saves after each message, so a later failure cannot cause a repeat tomorrow.
-export const runReminders = async ({ data, state, today, siteUrl, send, save = async () => {} }) => {
+export const runReminders = async ({
+  data, state, today, siteUrl, send, save = async () => {}, car = null,
+}) => {
   const estimate = estimateKm(data, today);
   const { messages, nextState } = planReminders({
     rows: buildStatuses(data, today),
@@ -20,7 +22,7 @@ export const runReminders = async ({ data, state, today, siteUrl, send, save = a
   });
   let progress = state;
   for (const message of messages) {
-    await send(formatMessage(message, siteUrl));
+    await send(formatMessage(message, siteUrl, car));
     progress = markSent(progress, nextState, message.kind);
     await save(progress);
   }

@@ -38,9 +38,11 @@ Your data is on GitHub, which keeps every change. For a file copy, press Setting
 **Can I use several devices?**
 Yes. Open the site and enter a token on each one. The data is the same everywhere.
 
-**I have two cars**
-Make a second data repository, e.g. `car-service-data-2`, and a token that covers both.
-When connecting, enter the repository of the car you want to see.
+**I have more than one car**
+Press Settings > Add a car. Each car is its own file in the same data repository (`data/car-<name>.json`),
+so the same token works. The overview then shows every car, most urgent first; tap one for its details.
+Other pages work on the car chosen at the top. Discord sends one message per car, `/km` has a `car` option,
+and `/status` lists every car.
 
 **The template has a new version. How do I update?**
 A repository made from a template does not update on its own. Copy the `web/` folder from the template over yours.
