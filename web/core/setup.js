@@ -2,6 +2,7 @@
 // Items without a "last done" entry count as done on the setup day (the owner's chosen starting point).
 import { isValidDate } from './records.js';
 import { starterItem } from './starter-items.js';
+import { getLanguage, t } from './i18n.js';
 
 const MAX_KM = 2000000;
 const MAX_ROUND_KM = 100000;
@@ -15,12 +16,12 @@ const isPositive = (value, max) => Number.isInteger(value) && value > 0 && value
 
 const pickErrors = (pick, form, today) => {
   const item = starterItem(pick.id);
-  if (!item) return ['มีรายการที่ไม่รู้จัก'];
+  if (!item) return [t('มีรายการที่ไม่รู้จัก')];
   return [
     ...(pick.lastDate && !(isValidDate(pick.lastDate) && pick.lastDate <= today)
-      ? [`${item.name}: วันที่ทำล่าสุดไม่ถูกต้อง`] : []),
+      ? [t('{name}: วันที่ทำล่าสุดไม่ถูกต้อง', { name: t(item.name) })] : []),
     ...(pick.lastKm !== undefined && pick.lastKm !== null && !(isKm(pick.lastKm) && pick.lastKm <= form.currentKm)
-      ? [`${item.name}: เลขไมล์ที่ทำล่าสุดต้องไม่เกินเลขไมล์ปัจจุบัน`] : []),
+      ? [t('{name}: เลขไมล์ที่ทำล่าสุดต้องไม่เกินเลขไมล์ปัจจุบัน', { name: t(item.name) })] : []),
   ];
 };
 
@@ -28,12 +29,12 @@ export const validateSetup = (form, today) => {
   const name = typeof form.name === 'string' ? form.name.trim() : '';
   const picks = Array.isArray(form.picks) ? form.picks : [];
   return [
-    ...(name && name.length <= MAX_NAME_LENGTH ? [] : ['ใส่ชื่อรถ ไม่เกิน 80 ตัวอักษร']),
-    ...(isValidDate(form.deliveredOn) && form.deliveredOn <= today ? [] : ['วันรับรถต้องเป็นวันที่ที่ผ่านมาแล้ว']),
-    ...(isKm(form.currentKm) ? [] : ['เลขไมล์ปัจจุบันต้องเป็นจำนวนเต็มบวก']),
-    ...(isPositive(form.roundKm, MAX_ROUND_KM) ? [] : ['ระยะรอบเช็คต้องเป็นจำนวนเต็มบวก']),
-    ...(isPositive(form.roundMonths, MAX_ROUND_MONTHS) ? [] : ['จำนวนเดือนของรอบต้องเป็นจำนวนเต็มบวก']),
-    ...(picks.length ? [] : ['เลือกรายการอย่างน้อย 1 รายการ']),
+    ...(name && name.length <= MAX_NAME_LENGTH ? [] : [t('ใส่ชื่อรถ ไม่เกิน 80 ตัวอักษร')]),
+    ...(isValidDate(form.deliveredOn) && form.deliveredOn <= today ? [] : [t('วันรับรถต้องเป็นวันที่ที่ผ่านมาแล้ว')]),
+    ...(isKm(form.currentKm) ? [] : [t('เลขไมล์ปัจจุบันต้องเป็นจำนวนเต็มบวก')]),
+    ...(isPositive(form.roundKm, MAX_ROUND_KM) ? [] : [t('ระยะรอบเช็คต้องเป็นจำนวนเต็มบวก')]),
+    ...(isPositive(form.roundMonths, MAX_ROUND_MONTHS) ? [] : [t('จำนวนเดือนของรอบต้องเป็นจำนวนเต็มบวก')]),
+    ...(picks.length ? [] : [t('เลือกรายการอย่างน้อย 1 รายการ')]),
     ...picks.flatMap((pick) => pickErrors(pick, form, today)),
   ];
 };
@@ -53,7 +54,9 @@ export const assumedLastFor = (item, { lastDate, lastKm } = {}, currentKm, today
 };
 
 const itemFor = (pick, form, today) => {
-  const item = starterItem(pick.id);
+  const starter = starterItem(pick.id);
+  // Starter names are Thai source text: saved in the language chosen at setup.
+  const item = { ...starter, name: t(starter.name), group: t(starter.group) };
   const assumedLast = assumedLastFor(item, pick, form.currentKm, today);
   return assumedLast ? { ...item, assumedLast } : item;
 };
@@ -71,6 +74,7 @@ export const buildCar = (form, today) => {
       roundKm: form.roundKm,
       roundMonths: form.roundMonths,
       defaultKmPerDay: DEFAULT_KM_PER_DAY,
+      language: getLanguage(),
       ...(hasAnchor ? { anchorItemId: ANCHOR_ID } : {}),
     },
     items,

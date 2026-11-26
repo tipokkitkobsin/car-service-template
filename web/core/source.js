@@ -1,4 +1,5 @@
 // Which GitHub repo holds the car data. Nothing here is secret.
+import { t } from './i18n.js';
 const OWNER_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/;
 const REPO_PATTERN = /^[A-Za-z0-9._-]{1,100}$/;
 const PAGES_SUFFIX = '.github.io';
@@ -11,6 +12,6 @@ export const defaultSource = (host) => ({
 });
 
 export const sourceErrors = ({ owner, repo }) => [
-  ...(OWNER_PATTERN.test(owner ?? '') ? [] : ['ชื่อบัญชี GitHub ไม่ถูกต้อง']),
-  ...(REPO_PATTERN.test(repo ?? '') && !/^\.+$/.test(repo) && !repo.includes('..') ? [] : ['ชื่อ repo ข้อมูลไม่ถูกต้อง']),
+  ...(OWNER_PATTERN.test(owner ?? '') ? [] : [t('ชื่อบัญชี GitHub ไม่ถูกต้อง')]),
+  ...(REPO_PATTERN.test(repo ?? '') && !/^\.+$/.test(repo) && !repo.includes('..') ? [] : [t('ชื่อ repo ข้อมูลไม่ถูกต้อง')]),
 ];

@@ -86,3 +86,8 @@ test('validateItem rejects a bad starting point', () => {
   assert.deepEqual(validateItem({ ...base, assumedLast: { date: '2026-01-01', km: 5 } }, '2026-11-26'), []);
   assert.deepEqual(validateItem({ id: 'c', name: 'c', rule: 'calendar', calendarMonth: 1, assumedLast: { date: '2026-01-01' } }), []);
 });
+
+test('updateCar saves a known language and refuses others', () => {
+  assert.equal(updateCar(makeData(), { language: 'en' }).car.language, 'en');
+  assert.throws(() => updateCar(makeData(), { language: 'fr' }));
+});

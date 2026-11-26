@@ -2,9 +2,11 @@
 // A typed brand is saved on the visit, so it shows up in this list next time.
 import { knownBrands } from '../core/records.js';
 import { h } from './dom.js';
+import { t } from '../core/i18n.js';
 
 const OTHER = '__other';
-const UNKNOWN = 'ไม่ทราบยี่ห้อ';
+// Saved in visit data as Thai text, so it is compared in Thai and only translated for display.
+const UNKNOWN = 'ไม่ทราบยี่ห้อ'; // i18n-ignore: stored value
 
 export const brandPicker = (data, item, current, isOpen) => {
   const known = knownBrands(data, item.id).filter((brand) => brand !== UNKNOWN);
@@ -12,12 +14,12 @@ export const brandPicker = (data, item, current, isOpen) => {
   const options = [...withCurrent, UNKNOWN];
   const text = h('input', {
     name: `brand-text-${item.id}`, maxlength: 100, autocomplete: 'off', hidden: true,
-    placeholder: 'พิมพ์ยี่ห้อ/รุ่น', 'aria-label': `ยี่ห้อใหม่ของ ${item.name}`,
+    placeholder: t('พิมพ์ยี่ห้อ/รุ่น'), 'aria-label': t('ยี่ห้อใหม่ของ {name}', { name: item.name }),
   });
-  const select = h('select', { name: `brand-${item.id}`, 'aria-label': `ยี่ห้อของ ${item.name}` },
-    h('option', { value: '', selected: !current }, 'ไม่ระบุยี่ห้อ'),
-    options.map((brand) => h('option', { value: brand, selected: brand === current }, brand)),
-    h('option', { value: OTHER }, 'อื่นๆ (พิมพ์เอง)'));
+  const select = h('select', { name: `brand-${item.id}`, 'aria-label': t('ยี่ห้อของ {name}', { name: item.name }) },
+    h('option', { value: '', selected: !current }, t('ไม่ระบุยี่ห้อ')),
+    options.map((brand) => h('option', { value: brand, selected: brand === current }, t(brand))),
+    h('option', { value: OTHER }, t('อื่นๆ (พิมพ์เอง)')));
   select.addEventListener('change', () => {
     text.hidden = select.value !== OTHER;
     if (!text.hidden) text.focus();

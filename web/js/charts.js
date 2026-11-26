@@ -1,6 +1,7 @@
 // Home-screen widgets. Plain SVG and HTML, coloured only through CSS tokens.
 import { daysBetween, formatDate, formatKm } from '../core/schedule.js';
 import { h } from './dom.js';
+import { t } from '../core/i18n.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const KM_PER_TICK = 50000;
@@ -31,7 +32,7 @@ export const roundRing = (progress) => {
       }),
     ];
   };
-  const label = `ถึงเช็คระยะครั้งถัดไป: ระยะทาง ${progress.kmPct}% เวลา ${progress.timePct}%`;
+  const label = t('ถึงเช็คระยะครั้งถัดไป: ระยะทาง {km}% เวลา {time}%', { km: progress.kmPct, time: progress.timePct });
   return s('svg', { viewBox: '0 0 160 160', class: 'ring', role: 'img', 'aria-label': label },
     tip(label),
     arc(70, progress.kmPct, 'ring-km'),
@@ -40,9 +41,9 @@ export const roundRing = (progress) => {
 
 export const ringLegend = (progress) => h('div', { class: 'legend' },
   h('span', {}, h('i', { class: 'swatch swatch-km', 'aria-hidden': 'true' }),
-    `ระยะทาง ${progress.kmPct}% · เหลือ ${formatKm(Math.max(0, progress.kmLeft))} km`),
+    t('ระยะทาง {pct}% · เหลือ {km} km', { pct: progress.kmPct, km: formatKm(Math.max(0, progress.kmLeft)) })),
   h('span', {}, h('i', { class: 'swatch swatch-time', 'aria-hidden': 'true' }),
-    `เวลา ${progress.timePct}% · เหลือ ${Math.max(0, progress.daysLeft)} วัน`));
+    t('เวลา {pct}% · เหลือ {days} วัน', { pct: progress.timePct, days: Math.max(0, progress.daysLeft) })));
 
 // One bar per item: share of its interval already used.
 export const lifeBar = (row, life) => h('div', {
@@ -51,7 +52,7 @@ export const lifeBar = (row, life) => h('div', {
   'aria-valuemin': '0',
   'aria-valuemax': '100',
   'aria-valuenow': String(clampPct(life.pct)),
-  'aria-label': `${row.item.name} ใช้ไป ${life.pct}%`,
+  'aria-label': t('{name} ใช้ไป {pct}%', { name: row.item.name, pct: life.pct }),
 },
 h('span', { class: 'life-fill', 'data-pct': String(clampPct(life.pct)) }),
 life.pct > 100 ? h('span', { class: 'life-over', 'aria-hidden': 'true' }) : null);
@@ -60,20 +61,20 @@ life.pct > 100 ? h('span', { class: 'life-over', 'aria-hidden': 'true' }) : null
 export const lifespanChart = (spans, limitDays, nameFor) => {
   const scale = Math.max(limitDays ?? 0, ...spans.map((span) => span.days)) * 1.08;
   const pct = (days) => `${(days / scale) * 100}%`;
-  const summary = spans.map((span, index) => `${nameFor(span, index)} ${span.days} วัน`).join(', ');
-  const limitText = limitDays ? ` · ช่วงระวัง ${limitDays} วัน` : '';
-  return h('div', { class: 'spans', role: 'img', 'aria-label': `อายุแต่ละครั้ง: ${summary}${limitText}` },
+  const summary = spans.map((span, index) => t('{name} {days} วัน', { name: nameFor(span, index), days: span.days })).join(', ');
+  const limitText = limitDays ? t(' · ช่วงระวัง {days} วัน', { days: limitDays }) : '';
+  return h('div', { class: 'spans', role: 'img', 'aria-label': t('อายุแต่ละครั้ง: {summary}', { summary: summary + limitText }) },
     limitDays ? h('div', { class: 'spans-layer', 'aria-hidden': 'true' },
-      h('div', { class: 'spans-limit', 'data-left': pct(limitDays) }, h('span', {}, `${limitDays} วัน`))) : null,
+      h('div', { class: 'spans-limit', 'data-left': pct(limitDays) }, h('span', {}, t('{days} วัน', { days: limitDays })))) : null,
     spans.map((span, index) => h('div', {
       class: 'span-row',
-      title: `${formatDate(span.from)} ถึง ${span.isCurrent ? 'วันนี้' : formatDate(span.to)}${span.visit?.note ? ` · ${span.visit.note}` : ''}`,
+      title: t('{from} ถึง {to}', { from: formatDate(span.from), to: span.isCurrent ? t('วันนี้') : formatDate(span.to) }) + (span.visit?.note ? ` · ${span.visit.note}` : ''),
     },
     h('span', { class: 'span-name' }, nameFor(span, index)),
     h('span', { class: 'span-track' },
       h('span', { class: `span-bar${span.isCurrent ? ' span-current' : ''}`, 'data-width': pct(span.days) })),
-    h('span', { class: 'span-days' }, h('span', { class: 'num' }, `${span.days} วัน`),
-      [span.brand, span.isCurrent ? 'ใช้อยู่' : ''].filter(Boolean).map((text) => ` · ${text}`).join('')))));
+    h('span', { class: 'span-days' }, h('span', { class: 'num' }, t('{days} วัน', { days: span.days })),
+      [span.brand && t(span.brand), span.isCurrent ? t('ใช้อยู่') : ''].filter(Boolean).map((text) => ` · ${text}`).join('')))));
 };
 
 const yearTicks = (from, to) => {
@@ -97,7 +98,7 @@ export const odometerChart = (points) => {
   const line = points.map((point, index) => `${index ? 'L' : 'M'}${x(point.date).toFixed(1)} ${y(point.km).toFixed(1)}`).join(' ');
   const end = points[points.length - 1];
   const years = (daysBetween(first, last) * 86400000) / MS_PER_YEAR;
-  const label = `เลขไมล์จาก 0 ถึง ${formatKm(end.km)} km ใน ${years.toFixed(1)} ปี`;
+  const label = t('เลขไมล์จาก 0 ถึง {km} km ใน {years} ปี', { km: formatKm(end.km), years: years.toFixed(1) });
   return s('svg', { viewBox: `0 0 ${width} ${height}`, class: 'odo', role: 'img', 'aria-label': label },
     tip(label),
     ticks.map((km) => s('g', {},

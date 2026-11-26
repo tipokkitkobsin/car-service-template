@@ -1,5 +1,6 @@
 // Validation and immutable updates for maintenance items and car details.
 import { isValidDate } from './records.js';
+import { LANGUAGES, t } from './i18n.js';
 
 export const RULES = ['interval', 'calendar', 'inspect', 'record', 'event'];
 
@@ -17,25 +18,25 @@ const RULE_FIELDS = {
   record: [],
   event: [],
 };
-const CAR_FIELDS = ['name', 'deliveredOn', 'roundKm', 'roundMonths'];
+const CAR_FIELDS = ['name', 'deliveredOn', 'roundKm', 'roundMonths', 'language'];
 
 const isWhole = (value, max) => Number.isInteger(value) && value > 0 && value <= max;
 
 const intervalErrors = (item) => {
   const hasKmMonths = item.intervalKm !== undefined || item.intervalMonths !== undefined;
   if (item.rule === 'interval' && item.intervalDays !== undefined && !hasKmMonths) {
-    return isWhole(item.intervalDays, MAX_DAYS) ? [] : ['จำนวนวันต้องเป็นจำนวนเต็มบวก'];
+    return isWhole(item.intervalDays, MAX_DAYS) ? [] : [t('จำนวนวันต้องเป็นจำนวนเต็มบวก')];
   }
   return [
-    ...(isWhole(item.intervalKm, MAX_KM) ? [] : ['ระยะ km ต้องเป็นจำนวนเต็มบวก']),
-    ...(isWhole(item.intervalMonths, MAX_MONTHS) ? [] : ['จำนวนเดือนต้องเป็นจำนวนเต็มบวก']),
+    ...(isWhole(item.intervalKm, MAX_KM) ? [] : [t('ระยะ km ต้องเป็นจำนวนเต็มบวก')]),
+    ...(isWhole(item.intervalMonths, MAX_MONTHS) ? [] : [t('จำนวนเดือนต้องเป็นจำนวนเต็มบวก')]),
   ];
 };
 
 const ruleErrors = (item) => {
-  if (!RULES.includes(item.rule)) return ['แบบของรายการไม่ถูกต้อง'];
+  if (!RULES.includes(item.rule)) return [t('แบบของรายการไม่ถูกต้อง')];
   if (item.rule === 'interval' || item.rule === 'inspect') return intervalErrors(item);
-  if (item.rule === 'calendar') return isWhole(item.calendarMonth, 12) ? [] : ['เดือนต้องอยู่ระหว่าง 1-12'];
+  if (item.rule === 'calendar') return isWhole(item.calendarMonth, 12) ? [] : [t('เดือนต้องอยู่ระหว่าง 1-12')];
   return [];
 };
 
@@ -45,8 +46,8 @@ const startErrors = (start, today) => {
   const isDateOk = isValidDate(start.date) && (!today || start.date <= today);
   const isKmOk = start.km === undefined || start.km === null || (Number.isInteger(start.km) && start.km >= 0 && start.km <= MAX_KM);
   return [
-    ...(isDateOk ? [] : ['วันที่ทำล่าสุดต้องเป็นวันที่ที่ผ่านมาแล้ว']),
-    ...(isKmOk ? [] : ['เลขไมล์ที่ทำล่าสุดต้องเป็นจำนวนเต็มบวก']),
+    ...(isDateOk ? [] : [t('วันที่ทำล่าสุดต้องเป็นวันที่ที่ผ่านมาแล้ว')]),
+    ...(isKmOk ? [] : [t('เลขไมล์ที่ทำล่าสุดต้องเป็นจำนวนเต็มบวก')]),
   ];
 };
 
@@ -54,8 +55,8 @@ export const validateItem = (item, today) => {
   const name = typeof item.name === 'string' ? item.name.trim() : '';
   const group = item.group ?? '';
   return [
-    ...(name && name.length <= MAX_NAME_LENGTH ? [] : ['ต้องมีชื่อรายการ ไม่เกิน 80 ตัวอักษร']),
-    ...(typeof group === 'string' && group.length <= MAX_GROUP_LENGTH ? [] : ['ชื่อหมวดยาวเกินไป']),
+    ...(name && name.length <= MAX_NAME_LENGTH ? [] : [t('ต้องมีชื่อรายการ ไม่เกิน 80 ตัวอักษร')]),
+    ...(typeof group === 'string' && group.length <= MAX_GROUP_LENGTH ? [] : [t('ชื่อหมวดยาวเกินไป')]),
     ...ruleErrors(item),
     ...startErrors(item.assumedLast, today),
   ];
@@ -90,12 +91,12 @@ export const makeItemId = (name, existingIds, random = Math.random) => {
 export const itemInUse = (data, id) => data.visits.some((visit) => visit.itemIds.includes(id));
 
 export const addItem = (data, item, today) => {
-  if (data.items.some((entry) => entry.id === item.id)) throw new Error('รหัสรายการซ้ำ');
+  if (data.items.some((entry) => entry.id === item.id)) throw new Error(t('รหัสรายการซ้ำ'));
   return { ...data, items: [...data.items, checked(cleanItem(item), today)] };
 };
 
 export const updateItem = (data, id, changes, today) => {
-  if (!data.items.some((item) => item.id === id)) throw new Error('ไม่พบรายการนี้');
+  if (!data.items.some((item) => item.id === id)) throw new Error(t('ไม่พบรายการนี้'));
   return {
     ...data,
     items: data.items.map((item) => (item.id === id ? checked(cleanItem({ ...item, ...changes, id }), today) : item)),
@@ -103,15 +104,16 @@ export const updateItem = (data, id, changes, today) => {
 };
 
 export const deleteItem = (data, id) => {
-  if (itemInUse(data, id)) throw new Error('ลบไม่ได้ เพราะมีประวัติใช้รายการนี้');
+  if (itemInUse(data, id)) throw new Error(t('ลบไม่ได้ เพราะมีประวัติใช้รายการนี้'));
   return { ...data, items: data.items.filter((item) => item.id !== id) };
 };
 
 const carErrors = (car) => [
-  ...(typeof car.name === 'string' && car.name.trim() && car.name.length <= MAX_NAME_LENGTH ? [] : ['ต้องมีชื่อรถ']),
-  ...(isValidDate(car.deliveredOn) ? [] : ['วันรับรถไม่ถูกต้อง']),
-  ...(isWhole(car.roundKm, MAX_KM) ? [] : ['ระยะรอบเช็คต้องเป็นจำนวนเต็มบวก']),
-  ...(isWhole(car.roundMonths, MAX_MONTHS) ? [] : ['จำนวนเดือนของรอบต้องเป็นจำนวนเต็มบวก']),
+  ...(typeof car.name === 'string' && car.name.trim() && car.name.length <= MAX_NAME_LENGTH ? [] : [t('ต้องมีชื่อรถ')]),
+  ...(isValidDate(car.deliveredOn) ? [] : [t('วันรับรถไม่ถูกต้อง')]),
+  ...(isWhole(car.roundKm, MAX_KM) ? [] : [t('ระยะรอบเช็คต้องเป็นจำนวนเต็มบวก')]),
+  ...(isWhole(car.roundMonths, MAX_MONTHS) ? [] : [t('จำนวนเดือนของรอบต้องเป็นจำนวนเต็มบวก')]),
+  ...(car.language === undefined || car.language in LANGUAGES ? [] : [t('ภาษาไม่ถูกต้อง')]),
 ];
 
 export const updateCar = (data, changes) => {

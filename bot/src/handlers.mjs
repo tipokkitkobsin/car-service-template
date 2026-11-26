@@ -3,6 +3,7 @@ import { addReading, deleteReading, validateReading } from '../../web/core/recor
 import {
   buildStatuses, dueText, estimateKm, formatKm, leftText, sortByUrgency, usageOf, usageText,
 } from '../../web/core/schedule.js';
+import { t } from '../../web/core/i18n.js';
 
 const MAX_REPLY = 1900;
 
@@ -20,7 +21,7 @@ export const isAllowed = ({ userId, channelId }, config) => (
 // Returns the reply text and, when saved, the reading so the bot can offer an undo button.
 export const recordKm = async ({ raw, store, today }) => {
   const km = parseKm(raw);
-  if (km === null) return { text: 'กรุณาพิมพ์เลขไมล์เป็นตัวเลข เช่น 115000' };
+  if (km === null) return { text: t('กรุณาพิมพ์เลขไมล์เป็นตัวเลข เช่น 115000') };
   const reading = { date: today, km };
   try {
     await store.update((data) => {
@@ -29,11 +30,11 @@ export const recordKm = async ({ raw, store, today }) => {
       return addReading(data, reading);
     }, `km: ${km} (discord)`);
   } catch (error) {
-    if (error instanceof RejectedReading) return { text: `ไม่ได้บันทึก: ${error.message}` };
+    if (error instanceof RejectedReading) return { text: t('ไม่ได้บันทึก: {reason}', { reason: error.message }) };
     throw error;
   }
   return {
-    text: `บันทึกเลขไมล์ ${formatKm(km)} km แล้ว · ถ้าผิด ให้กด "แก้" หรือพิมพ์ /km ใหม่วันนี้ ค่าใหม่จะแทนค่าเดิม`,
+    text: t('บันทึกเลขไมล์ {km} km แล้ว · ถ้าผิด ให้กด "แก้" หรือพิมพ์ /km ใหม่วันนี้ ค่าใหม่จะแทนค่าเดิม', { km: formatKm(km) }),
     reading,
   };
 };
@@ -46,10 +47,10 @@ export const undoKm = async ({ date, km, store }) => {
       return deleteReading(data, date);
     }, `km: delete ${date} ${km} (discord)`);
   } catch (error) {
-    if (error instanceof RejectedReading) return 'ไม่พบรายการนี้แล้ว อาจถูกแก้หรือลบไปก่อน';
+    if (error instanceof RejectedReading) return t('ไม่พบรายการนี้แล้ว อาจถูกแก้หรือลบไปก่อน');
     throw error;
   }
-  return `ลบเลขไมล์ ${formatKm(km)} km ของวันที่ ${date} แล้ว`;
+  return t('ลบเลขไมล์ {km} km ของวันที่ {date} แล้ว', { km: formatKm(km), date });
 };
 
 export const statusText = async ({ store, today }) => {
@@ -57,15 +58,15 @@ export const statusText = async ({ store, today }) => {
   const estimate = estimateKm(data, today);
   const all = sortByUrgency(buildStatuses(data, today));
   const rows = all.filter((row) => ['overdue', 'watch', 'check', 'soon'].includes(row.state));
-  const lines = rows.map((row) => `• **${row.item.name}** ${row.state === 'check' ? 'ต้องตรวจ' : `${dueText(row)} (${leftText(row)})`}`);
+  const lines = rows.map((row) => `• **${row.item.name}** ${row.state === 'check' ? t('ต้องตรวจ') : `${dueText(row)} (${leftText(row)})`}`);
   const ages = all
     .map((row) => ({ row, usage: row.state === 'record' ? usageOf(row, data, today) : null }))
     .filter(({ usage }) => usage)
     .map(({ row, usage }) => `• **${row.item.name}** ${usageText(usage)}`);
-  const head = `เลขไมล์${estimate.isEstimated ? 'ประมาณ' : ''} ${formatKm(estimate.km)} km`;
+  const head = (estimate.isEstimated ? t('เลขไมล์ประมาณ {km} km', { km: formatKm(estimate.km) }) : t('เลขไมล์ {km} km', { km: formatKm(estimate.km) }));
   return [
     head,
-    ...(lines.length ? lines : ['ไม่มีงานค้าง']),
-    ...(ages.length ? ['', '**อายุการใช้งาน**', ...ages] : []),
+    ...(lines.length ? lines : [t('ไม่มีงานค้าง')]),
+    ...(ages.length ? ['', t('**อายุการใช้งาน**'), ...ages] : []),
   ].join('\n').slice(0, MAX_REPLY);
 };

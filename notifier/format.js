@@ -1,5 +1,6 @@
 // Turns a planned reminder into a Discord message.
 import { dueText, formatDate, formatKm, leftText } from '../web/core/schedule.js';
+import { t, tx } from '../web/core/i18n.js';
 
 const MAX_CONTENT = 2000;
 const RESERVED = 120;
@@ -8,9 +9,9 @@ const ACTION_ROW = 1;
 const STYLE_PRIMARY = 1;
 const STYLE_LINK = 5;
 const TITLES = {
-  soon: '**ใกล้ถึงกำหนดเช็คระยะ**',
-  watch: '**เข้าช่วงระวัง** ตรวจสภาพหรือเตรียมเปลี่ยน',
-  overdue: '**สรุปงานเกินกำหนด** (ยกยอดไปรอบถัดไปจนกว่าจะบันทึกว่าทำแล้ว)',
+  soon: tx('**ใกล้ถึงกำหนดเช็คระยะ**'),
+  watch: tx('**เข้าช่วงระวัง** ตรวจสภาพหรือเตรียมเปลี่ยน'),
+  overdue: tx('**สรุปงานเกินกำหนด** (ยกยอดไปรอบถัดไปจนกว่าจะบันทึกว่าทำแล้ว)'),
 };
 
 const lineFor = (row) => `• **${row.item.name}** ${dueText(row)} (${leftText(row)})`;
@@ -24,11 +25,11 @@ const fitLines = (lines) => {
     used += line.length + 1;
   }
   const hidden = lines.length - kept.length;
-  return hidden > 0 ? [...kept, `และอีก ${hidden} รายการในเว็บ`] : kept;
+  return hidden > 0 ? [...kept, t('และอีก {count} รายการในเว็บ', { count: hidden })] : kept;
 };
 
-const linkButton = (siteUrl) => ({ type: BUTTON, style: STYLE_LINK, label: 'เปิดเว็บ', url: siteUrl });
-const kmButton = { type: BUTTON, style: STYLE_PRIMARY, label: 'กรอกเลขไมล์', custom_id: 'km:open' };
+const linkButton = (siteUrl) => ({ type: BUTTON, style: STYLE_LINK, label: t('เปิดเว็บ'), url: siteUrl });
+const kmButton = () => ({ type: BUTTON, style: STYLE_PRIMARY, label: t('กรอกเลขไมล์'), custom_id: 'km:open' });
 
 const payload = (content, buttons) => ({
   content,
@@ -38,12 +39,12 @@ const payload = (content, buttons) => ({
 
 export const formatMessage = (message, siteUrl) => {
   if (message.kind === 'askKm') {
-    const since = message.lastReadingDate ? ` จดล่าสุด ${formatDate(message.lastReadingDate)}` : '';
+    const since = message.lastReadingDate ? t(' จดล่าสุด {date}', { date: formatDate(message.lastReadingDate) }) : '';
     return payload(
-      `**ตอนนี้เลขไมล์เท่าไหร่?**\nระบบประมาณไว้ ${formatKm(message.estimateKm)} km${since}\nกดปุ่ม หรือพิมพ์ \`/km 115000\``,
-      [kmButton, linkButton(siteUrl)],
+      t('**ตอนนี้เลขไมล์เท่าไหร่?**\nระบบประมาณไว้ {km} km{since}\nกดปุ่ม หรือพิมพ์ `/km 115000`', { km: formatKm(message.estimateKm), since }),
+      [kmButton(), linkButton(siteUrl)],
     );
   }
   const lines = fitLines(message.rows.map(lineFor));
-  return payload([TITLES[message.kind], ...lines].join('\n'), [linkButton(siteUrl), kmButton]);
+  return payload([t(TITLES[message.kind]), ...lines].join('\n'), [linkButton(siteUrl), kmButton()]);
 };

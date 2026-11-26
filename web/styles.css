@@ -224,3 +224,4 @@ fieldset.choice legend { padding: 0; margin-bottom: 4px; }
 a.row { color: inherit; text-decoration: none; }
 a.row:hover { background: var(--surface-2); }
 a.row .row-left { color: var(--accent); }
+.lang-switch { display: flex; gap: 6px; justify-content: flex-end; }

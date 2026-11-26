@@ -1,13 +1,14 @@
 // The car's life story: every visit plus computed milestones, grouped by year.
 import { addDays, allReadings, daysBetween, formatKm } from './schedule.js';
+import { t, tx } from './i18n.js';
 
 const MILESTONE_KM = 50000;
 
 export const KINDS = {
-  service: 'เข้าศูนย์/เช็คระยะ',
-  repair: 'ซ่อม/เคลม',
-  mod: 'แต่ง',
-  part: 'อะไหล่/ดูแล',
+  service: tx('เข้าศูนย์/เช็คระยะ'),
+  repair: tx('ซ่อม/เคลม'),
+  mod: tx('แต่ง'),
+  part: tx('อะไหล่/ดูแล'),
 };
 
 const isOilChange = (id) => /(^|-)oil$/.test(id);
@@ -33,7 +34,7 @@ export const milestones = (data, today) => {
   const readings = withStart(data);
   const passed = readings.slice(1).flatMap((reading, index) => crossings(readings[index], reading));
   return [
-    { date: data.car.deliveredOn, km: 0, title: 'รับรถ', isKmEstimated: false },
+    { date: data.car.deliveredOn, km: 0, title: t('รับรถ'), isKmEstimated: false },
     ...passed.map(({ km, date }) => ({ date, km, title: `${formatKm(km)} km`, isKmEstimated: true })),
   ].filter((mark) => mark.date <= today);
 };

@@ -69,3 +69,12 @@ test('readJson can report a missing car file as null', async () => {
   const { readJson } = await import('../notifier/state.js');
   assert.equal(await readJson(async () => { throw Object.assign(new Error('x'), { code: 'ENOENT' }); }, null), null);
 });
+
+test('reminder messages follow the chosen language', async () => {
+  const { setLanguage } = await import('../web/core/i18n.js');
+  setLanguage('en');
+  const message = formatMessage({ kind: 'askKm', estimateKm: 12000, lastReadingDate: null }, 'https://example.test/');
+  setLanguage('th');
+  assert.match(message.content, /What is the odometer now/);
+  assert.equal(message.components[0].components[0].label, 'Enter odometer');
+});

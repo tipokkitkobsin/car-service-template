@@ -2,6 +2,7 @@
 import {
   addMonths, allReadings, daysBetween, estimateKm, lastDone, nextRound,
 } from './schedule.js';
+import { tx } from './i18n.js';
 
 const percent = (used, total) => (total > 0 ? Math.round((used / total) * 100) : 0);
 
@@ -46,7 +47,7 @@ export const roundProgress = (data, today) => {
   };
 };
 
-const ORIGINAL_BRAND = 'เดิมติดรถ';
+const ORIGINAL_BRAND = tx('เดิมติดรถ');
 
 // Each install of a part, numbered from 1. Number 0 is the factory part, when it was replaced later.
 export const lifespans = (data, itemId, today) => {

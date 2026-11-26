@@ -5,6 +5,7 @@ import { DATA_PATH, defaultSource, sourceErrors } from '../core/source.js';
 
 const TOKEN_KEY = 'car-service.token';
 const SOURCE_KEY = 'car-service.source';
+const LANGUAGE_KEY = 'car-service.language';
 
 const attempt = (work, fallback) => {
   try {
@@ -44,3 +45,7 @@ export const writeSource = (source) => {
 };
 
 export const openStore = (token, source = readSource()) => createStore({ ...source, path: DATA_PATH, token });
+
+// The language chosen in this browser, used before the car data has loaded.
+export const readLanguage = () => attempt(() => localStorage.getItem(LANGUAGE_KEY), null);
+export const writeLanguage = (language) => attempt(() => localStorage.setItem(LANGUAGE_KEY, language));

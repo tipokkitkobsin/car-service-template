@@ -5,6 +5,7 @@ import {
 import { createStore, StoreError } from '../../web/core/github-store.js';
 import { todayInBangkok } from '../../web/core/schedule.js';
 import { isAllowed, recordKm, statusText, undoKm } from './handlers.mjs';
+import { setLanguage, t, translateTo, tx } from '../../web/core/i18n.js';
 
 const UNDO_PATTERN = /^km:undo:(\d{4}-\d{2}-\d{2}):(\d{1,7})$/;
 
@@ -31,34 +32,45 @@ const store = createStore({
 });
 const ephemeral = { flags: MessageFlags.Ephemeral };
 
+// Thai descriptions, with English shown to Discord users whose app is in English.
+const inEnglish = (text) => ({ 'en-US': translateTo('en', text), 'en-GB': translateTo('en', text) });
+const describe = (builder, text) => builder.setDescription(text).setDescriptionLocalizations(inEnglish(text));
+
 const commands = [
-  new SlashCommandBuilder().setName('km').setDescription('จดเลขไมล์วันนี้')
-    .addStringOption((option) => option.setName('value').setDescription('เลขไมล์ เช่น 115000').setRequired(true)),
-  new SlashCommandBuilder().setName('status').setDescription('ดูงานเช็คระยะที่ค้างหรือใกล้ถึง'),
+  describe(new SlashCommandBuilder().setName('km'), tx('จดเลขไมล์วันนี้'))
+    .addStringOption((option) => describe(option.setName('value'), tx('เลขไมล์ เช่น 115000')).setRequired(true)),
+  describe(new SlashCommandBuilder().setName('status'), tx('ดูงานเช็คระยะที่ค้างหรือใกล้ถึง')),
 ].map((command) => command.toJSON());
 
-const kmModal = () => new ModalBuilder().setCustomId('km:submit').setTitle('กรอกเลขไมล์').addComponents(
+const kmModal = () => new ModalBuilder().setCustomId('km:submit').setTitle(t('กรอกเลขไมล์')).addComponents(
   new ActionRowBuilder().addComponents(new TextInputBuilder()
-    .setCustomId('km').setLabel('เลขไมล์วันนี้').setStyle(TextInputStyle.Short)
+    .setCustomId('km').setLabel(t('เลขไมล์วันนี้')).setStyle(TextInputStyle.Short)
     .setPlaceholder('115000').setMinLength(1).setMaxLength(9).setRequired(true)),
 );
 
 const kmReply = ({ text, reading }) => {
   if (!reading) return { content: text, components: [] };
   const buttons = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('km:open').setLabel('แก้').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId(`km:undo:${reading.date}:${reading.km}`).setLabel('ลบรายการนี้').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('km:open').setLabel(t('แก้')).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(`km:undo:${reading.date}:${reading.km}`).setLabel(t('ลบรายการนี้')).setStyle(ButtonStyle.Danger),
   );
   return { content: text, components: [buttons] };
+};
+
+// Replies follow the language saved with the car data.
+const useCarLanguage = async () => {
+  const { data } = await store.load();
+  setLanguage(data.car.language);
 };
 
 const answer = async (interaction, work) => {
   await interaction.deferReply(ephemeral);
   try {
+    await useCarLanguage();
     await interaction.editReply(await work());
   } catch (error) {
     console.error(`Request failed: ${error.code ?? error.name}`);
-    await interaction.editReply(error instanceof StoreError ? error.message : 'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง');
+    await interaction.editReply(error instanceof StoreError ? error.message : t('เกิดข้อผิดพลาด ลองใหม่อีกครั้ง'));
   }
 };
 
@@ -100,7 +112,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   try {
     if (!interaction.isRepliable()) return;
     if (!isAllowed({ userId: interaction.user.id, channelId: interaction.channelId }, config)) {
-      await interaction.reply({ content: 'คำสั่งนี้ใช้ได้เฉพาะเจ้าของรถในห้องที่กำหนด', ...ephemeral });
+      await interaction.reply({ content: t('คำสั่งนี้ใช้ได้เฉพาะเจ้าของรถในห้องที่กำหนด'), ...ephemeral });
       return;
     }
     await route(interaction);

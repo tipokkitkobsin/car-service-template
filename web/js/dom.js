@@ -1,4 +1,5 @@
 // Small DOM helpers. Text always goes in as text nodes, never as HTML.
+import { t, tx } from '../core/i18n.js';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const ICONS = {
   gauge: ['m12 14 4-4', 'M3.34 19a10 10 0 1 1 17.32 0'],
@@ -18,12 +19,12 @@ const ICONS = {
 };
 
 export const STATUS = {
-  overdue: { label: 'เกินกำหนด', icon: 'alert' },
-  check: { label: 'ต้องตรวจ', icon: 'search' },
-  watch: { label: 'ช่วงระวัง', icon: 'alert' },
-  soon: { label: 'ใกล้ถึง', icon: 'clock' },
-  ok: { label: 'ปกติ', icon: 'check' },
-  record: { label: 'บันทึก', icon: 'note' },
+  overdue: { label: tx('เกินกำหนด'), icon: 'alert' },
+  check: { label: tx('ต้องตรวจ'), icon: 'search' },
+  watch: { label: tx('ช่วงระวัง'), icon: 'alert' },
+  soon: { label: tx('ใกล้ถึง'), icon: 'clock' },
+  ok: { label: tx('ปกติ'), icon: 'check' },
+  record: { label: tx('บันทึก|status'), icon: 'note' },
 };
 
 export const icon = (name) => {
@@ -54,7 +55,7 @@ export const h = (tag, props = {}, ...children) => {
   return el;
 };
 
-export const tag = (state) => h('span', { class: `tag tag-${state}` }, icon(STATUS[state].icon), STATUS[state].label);
+export const tag = (state) => h('span', { class: `tag tag-${state}` }, icon(STATUS[state].icon), t(STATUS[state].label));
 
 export const field = (label, id, control, help) => h('div', { class: 'field' },
   h('label', { htmlFor: id }, label),
@@ -72,7 +73,7 @@ export const confirmDialog = (message, confirmLabel) => new Promise((resolve) =>
   dialog.append(
     h('p', {}, message),
     h('div', { class: 'actions', style: null },
-      h('button', { class: 'btn', type: 'button', onClick: () => close(false) }, 'ยกเลิก'),
+      h('button', { class: 'btn', type: 'button', onClick: () => close(false) }, t('ยกเลิก')),
       h('button', { class: 'btn btn-danger', type: 'button', onClick: () => close(true) }, confirmLabel)),
   );
   dialog.addEventListener('cancel', (event) => { event.preventDefault(); close(false); });

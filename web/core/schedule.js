@@ -1,4 +1,5 @@
 // Pure schedule logic, shared by the web app, the reminder job and the Discord bot.
+import { t } from './i18n.js';
 const MS_PER_DAY = 86400000;
 const DAYS_PER_MONTH = 30.4375;
 const SOON_DAYS = 30;
@@ -37,16 +38,16 @@ export const formatDate = (iso) => {
 
 export const dueText = (row) => {
   if (!row.dueDate) return '';
-  const km = row.dueKm === null ? '' : ` หรือ ${formatKm(row.dueKm)} km`;
-  return `ครบ ${formatDate(row.dueDate)}${km}`;
+  const km = row.dueKm === null ? '' : t(' หรือ {km} km', { km: formatKm(row.dueKm) });
+  return t('ครบ {date}{km}', { date: formatDate(row.dueDate), km });
 };
 
 export const leftText = (row) => {
-  if (row.state === 'overdue') return `เกินมา ${row.roundsOver} รอบ`;
-  if (row.state === 'watch') return `ใช้มา ${daysBetween(row.last.date, row.dueDate) - row.daysLeft} วัน`;
+  if (row.state === 'overdue') return t('เกินมา {rounds} รอบ', { rounds: row.roundsOver });
+  if (row.state === 'watch') return t('ใช้มา {days} วัน', { days: daysBetween(row.last.date, row.dueDate) - row.daysLeft });
   if (row.daysLeft === null) return '';
   const km = row.kmLeft === null ? '' : ` · ${formatKm(row.kmLeft)} km`;
-  return `เหลือ ${row.daysLeft} วัน${km}`;
+  return t('เหลือ {days} วัน', { days: row.daysLeft }) + km;
 };
 
 const monthsForKm = (km, car) => (km / car.roundKm) * car.roundMonths;
@@ -166,7 +167,7 @@ export const usageOf = (row, data, today) => {
 };
 
 export const usageText = (usage) => (
-  `ใช้มา ${usage.years} ปี · ${formatKm(usage.km)} km${usage.isEstimated ? ' (ประมาณ)' : ''}`
+  t('ใช้มา {years} ปี · {km} km', { years: usage.years, km: formatKm(usage.km) }) + (usage.isEstimated ? t(' (ประมาณ)') : '')
 );
 
 export const buildStatuses = (data, today) => {
