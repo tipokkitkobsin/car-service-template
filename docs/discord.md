@@ -68,6 +68,7 @@ Or change any file in the website repository, such as a note in the README, befo
 # Odometer bot in Discord (optional, needs an always-on machine)
 
 Use `/km 85000` to log the odometer and `/status` to see what is due, right in Discord.
+With several cars, add the car: `/km 85000 car:` then pick it from the list.
 You need a machine that runs Docker and stays on: a NAS (Synology, QNAP), a Raspberry Pi, or a VPS.
 The bot only connects out to Discord and GitHub, so no port needs to be opened.
 
