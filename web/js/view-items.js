@@ -1,6 +1,6 @@
 // Car details and the list of maintenance items: add, edit, delete.
 import {
-  addItem, deleteItem, itemInUse, makeItemId, updateCar, updateItem,
+  addItem, chosenGroup, deleteItem, groupNames, itemInUse, makeItemId, NEW_GROUP, updateCar, updateItem,
 } from '../core/items.js';
 import { assumedLastFor } from '../core/setup.js';
 import { estimateKm, formatKm } from '../core/schedule.js';
@@ -110,7 +110,7 @@ const readItem = (form, kind) => {
   const number = (name) => (KIND_FIELDS[kind].includes(name) ? parseNumber(form.elements[name].value) ?? undefined : undefined);
   return {
     name: form.elements.itemName.value,
-    group: form.elements.itemGroup.value || t('อื่น ๆ'),
+    group: chosenGroup(form.elements.itemGroup.value, form.elements.newGroup.value) || t('อื่น ๆ'),
     rule: kind === 'days' ? 'interval' : kind,
     intervalKm: number('intervalKm'),
     intervalMonths: number('intervalMonths'),
@@ -149,6 +149,22 @@ const deleteButton = (ctx, item) => {
   }, t('ลบรายการ'));
 };
 
+// Existing groups in a list; "new group" shows a box to type one.
+const groupField = (items, current) => {
+  const groups = groupNames(items);
+  const isNew = groups.length === 0;
+  const select = h('select', { id: 'itemGroup', name: 'itemGroup' },
+    h('option', { value: '', selected: !current && !isNew }, t('เลือกหมวด')),
+    groups.map((group) => h('option', { value: group, selected: group === current }, group)),
+    h('option', { value: NEW_GROUP, selected: isNew }, t('+ หมวดใหม่')));
+  const input = h('input', { id: 'newGroup', name: 'newGroup', maxlength: 40, autocomplete: 'off' });
+  const newField = field(t('ชื่อหมวดใหม่'), 'newGroup', input);
+  const sync = () => { newField.hidden = select.value !== NEW_GROUP; };
+  select.addEventListener('change', () => { sync(); if (!newField.hidden) input.focus(); });
+  sync();
+  return [field(t('หมวด'), 'itemGroup', select), newField];
+};
+
 const startFields = (ctx) => h('details', { class: 'last-done' },
   h('summary', {}, t('ทำล่าสุดเมื่อ (ไม่บังคับ ถ้าไม่ใส่จะนับจากวันนี้)')),
   h('div', { class: 'grid-2' },
@@ -172,12 +188,10 @@ export const renderItemEdit = (ctx, itemId) => {
     if (item) return (data) => updateItem(data, item.id, needsStart ? withStart(ctx, form, next) : next, ctx.today);
     return (data) => addItem(data, withStart(ctx, form, { ...next, id: makeItemId(next.name, data.items.map((entry) => entry.id)) }), ctx.today);
   };
-  const groups = [...new Set(ctx.data.items.map((entry) => entry.group).filter(Boolean))];
   return h('form', { class: 'card stack', novalidate: true, onSubmit: saveWith(ctx, save, error, change, `item: ${item ? 'edit' : 'add'}`, '#/items') },
     h('h1', {}, item ? t('แก้รายการ') : t('เพิ่มรายการ')),
     field(t('ชื่อรายการ *'), 'itemName', h('input', { id: 'itemName', maxlength: 80, required: true, value: item?.name ?? '' })),
-    field(t('หมวด'), 'itemGroup', h('input', { id: 'itemGroup', list: 'item-groups', maxlength: 40, value: item?.group ?? '' })),
-    h('datalist', { id: 'item-groups' }, groups.map((group) => h('option', { value: group }))),
+    ...groupField(ctx.data.items, item?.group),
     field(t('แบบการเตือน'), 'kind', kindSelect),
     h('div', { class: 'grid-2' }, fields.intervalKm, fields.intervalMonths),
     fields.intervalDays,

@@ -88,6 +88,20 @@ export const makeItemId = (name, existingIds, random = Math.random) => {
   }
 };
 
+// The item editor offers the groups already in use, plus a "new group" choice with its own name box.
+export const NEW_GROUP = '__new__';
+
+export const groupNames = (items) => [...new Set(items
+  .map((item) => item.group)
+  .filter((group) => typeof group === 'string' && group.trim()))];
+
+export const chosenGroup = (choice, typed) => {
+  if (choice !== NEW_GROUP) return choice;
+  const name = typed.trim();
+  if (!name) throw new Error(t('ใส่ชื่อหมวดใหม่'));
+  return name;
+};
+
 export const itemInUse = (data, id) => data.visits.some((visit) => visit.itemIds.includes(id));
 
 export const addItem = (data, item, today) => {

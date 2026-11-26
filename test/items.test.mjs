@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  addItem, deleteItem, itemInUse, makeItemId, updateCar, updateItem, validateItem,
+  addItem, chosenGroup, deleteItem, groupNames, itemInUse, makeItemId, NEW_GROUP, updateCar, updateItem, validateItem,
 } from '../web/core/items.js';
 import { makeData, visit } from './fixture.mjs';
 
@@ -90,4 +90,19 @@ test('validateItem rejects a bad starting point', () => {
 test('updateCar saves a known language and refuses others', () => {
   assert.equal(updateCar(makeData(), { language: 'en' }).car.language, 'en');
   assert.throws(() => updateCar(makeData(), { language: 'fr' }));
+});
+
+test('groupNames lists each existing group once, in item order, skipping blanks', () => {
+  const items = [{ group: 'เครื่องยนต์' }, { group: 'เบรก' }, { group: 'เครื่องยนต์' }, {}, { group: '  ' }];
+  assert.deepEqual(groupNames(items), ['เครื่องยนต์', 'เบรก']);
+});
+
+test('chosenGroup returns the picked group, or the typed name for a new group', () => {
+  assert.equal(chosenGroup('เบรก', 'ignored'), 'เบรก');
+  assert.equal(chosenGroup(NEW_GROUP, '  ไฟส่องสว่าง '), 'ไฟส่องสว่าง');
+  assert.equal(chosenGroup('', ''), '');
+});
+
+test('chosenGroup refuses a new group with no name', () => {
+  assert.throws(() => chosenGroup(NEW_GROUP, '   '), /หมวด/);
 });
