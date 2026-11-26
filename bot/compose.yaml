@@ -1,0 +1,23 @@
+services:
+  car-service-bot:
+    build:
+      context: ..
+      dockerfile: bot/Dockerfile
+      network: host
+    image: car-service-bot:local
+    container_name: car-service-bot
+    env_file: .env
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 192m
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "3"

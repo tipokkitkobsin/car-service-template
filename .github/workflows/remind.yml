@@ -1,0 +1,60 @@
+name: Daily reminder
+
+# Optional. Sends due reminders to Discord every day at 09:00 Bangkok time.
+# Turn on: Settings > Secrets and variables > Actions
+#   Variables: REMINDERS_ENABLED = true, DATA_REPO = name of your private data repo (default car-service-data)
+#   Secrets:   DATA_TOKEN (fine-grained token: Contents read and write on the data repo only),
+#              DISCORD_BOT_TOKEN, DISCORD_CHANNEL_ID
+on:
+  schedule:
+    - cron: "0 2 * * *" # 09:00 in Bangkok
+  workflow_dispatch:
+    inputs:
+      test:
+        description: Send one test message only
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reminder
+
+jobs:
+  remind:
+    if: vars.REMINDERS_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: ${{ github.repository_owner }}/${{ vars.DATA_REPO || 'car-service-data' }}
+          token: ${{ secrets.DATA_TOKEN }}
+          path: data-repo
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Send reminders
+        working-directory: data-repo
+        run: |
+          export SITE_URL="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/"
+          node ../notifier/remind.mjs
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+          REMIND_TEST: ${{ inputs.test == true }}
+      - name: Save reminder state
+        if: always()
+        working-directory: data-repo
+        run: |
+          [ -f data/reminder-state.json ] || exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/reminder-state.json
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: update reminder state"
+          git pull --rebase origin HEAD
+          git push origin HEAD

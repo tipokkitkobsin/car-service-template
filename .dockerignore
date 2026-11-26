@@ -1,0 +1,6 @@
+**
+!package.json
+!web/core/**
+!bot/package.json
+!bot/package-lock.json
+!bot/src/**
