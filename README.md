@@ -1,133 +1,134 @@
-# เช็คระยะ: สมุดดูแลรถของคุณเอง
+# Car service: your own maintenance log
 
-[English](README.en.md)
+[ภาษาไทย](README.th.md)
 
-เว็บสำหรับจดการเข้าศูนย์หรือเข้าอู่ จดเลขไมล์ และเตือนเมื่อถึงกำหนดเปลี่ยนน้ำมันเครื่อง กรอง หัวเทียน ยาง แบต และอื่น ๆ
-ใช้ได้กับรถทุกยี่ห้อ ทุกรุ่น ฟรีทั้งหมด
+A web app to log garage visits and odometer readings, and to remind you when oil, filters, spark plugs, tyres,
+the battery and more are due. Works for any make and model. Free.
 
-- ดูสถานะทุกรายการในหน้าเดียว: เกินกำหนด ใกล้ถึง หรือปกติ
-- จดการเข้าอู่ได้หลายอู่ในรอบเดียวกัน พร้อมค่าใช้จ่าย ยี่ห้อ และโน้ต
-- ไทม์ไลน์ชีวิตรถ อายุการใช้งานของยาง ผ้าเบรก แบต และกราฟเลขไมล์
-- เพิ่ม แก้ หรือลบรายการเองได้ในหน้าเว็บ ไม่ต้องเขียนโค้ด
-- แจ้งเตือนเข้า Discord ทุกเช้า (ไม่บังคับ)
-- ใช้ได้ทั้งภาษาไทยและอังกฤษ สลับได้ในหน้าตั้งค่า
+- See every item at a glance: overdue, due soon or OK
+- Log visits, several shops per service round, with cost, brand and notes
+- A timeline of the car's life, lifespans of tyres, brake pads and batteries, and an odometer chart
+- Add, edit or remove items in the app, no coding
+- Optional daily reminders in Discord
+- Thai or English: switch any time in Settings
 
-ข้อมูลรถเก็บใน GitHub ของคุณเองแบบส่วนตัว ไม่มีใครเห็นนอกจากคุณ
+Your car data stays private in your own GitHub account.
 
-## ต้องมีอะไรบ้าง
+## What you need
 
-- บัญชี GitHub ฟรี ([สมัครที่นี่](https://github.com/signup))
-- เวลาราว 20 นาทีสำหรับตั้งค่าครั้งแรก
-- คอมพิวเตอร์สำหรับตั้งค่า หลังจากนั้นใช้บนมือถือได้เลย
+- A free GitHub account ([sign up](https://github.com/signup))
+- About 20 minutes for the first setup
+- A computer for the setup; after that, your phone is enough
 
-ระบบใช้ 2 repo:
+The app uses two repositories:
 
-| repo | แบบ | มีอะไร |
+| Repository | Visibility | Holds |
 |---|---|---|
-| `car-service` (ชื่ออะไรก็ได้) | Public | ตัวเว็บ คัดลอกจาก template นี้ |
-| `car-service-data` | **Private** | ข้อมูลรถของคุณ |
+| `car-service` (any name) | Public | The website, copied from this template |
+| `car-service-data` | **Private** | Your car data |
 
-ตัวเว็บต้องเป็น Public เพราะ GitHub Pages ฟรีใช้ได้กับ repo public เท่านั้น ส่วนข้อมูลแยกไว้ใน repo private จึงไม่มีใครเห็น
+The website must be public because free GitHub Pages only serves public repositories.
+Your data lives in a separate private repository, so nobody else can see it.
 
-## ขั้นที่ 1: สร้างเว็บจาก template
+## Step 1: Create the site from this template
 
-1. กดปุ่มสีเขียว **Use this template** ด้านบนของหน้านี้ แล้วเลือก **Create a new repository**
-2. ช่อง **Repository name** ใส่ `car-service` หรือชื่ออื่นที่อยากได้ ชื่อนี้จะอยู่ในลิงก์เว็บ
-3. เลือก **Public** แล้วกด **Create repository**
+1. Press the green **Use this template** button at the top of this page, then **Create a new repository**.
+2. **Repository name**: `car-service`, or any name. It becomes part of your site's address.
+3. Choose **Public**, then press **Create repository**.
 
-จะได้ repo ใหม่ในบัญชีของคุณ เช่น `github.com/<ชื่อบัญชี>/car-service`
+## Step 2: Turn on GitHub Pages
 
-## ขั้นที่ 2: เปิดเว็บด้วย GitHub Pages
+1. In the new repository, open **Settings**, then **Pages** in the left menu.
+2. Under Build and deployment, set **Source** to **GitHub Actions**.
+3. Open the **Actions** tab, choose **Test and deploy** on the left, press **Run workflow**, then **Run workflow** again.
+4. Wait 1-2 minutes for a green tick.
 
-1. ใน repo ที่เพิ่งสร้าง กด **Settings** แล้วเลือก **Pages** ในเมนูซ้าย
-2. ช่อง **Source** ใต้ Build and deployment เลือก **GitHub Actions**
-3. กดแท็บ **Actions** ด้านบน เลือก **Test and deploy** ทางซ้าย แล้วกด **Run workflow** และ **Run workflow** อีกครั้ง
-4. รอราว 1-2 นาทีจนขึ้นเครื่องหมายถูกสีเขียว
+Your site is now at `https://<your-account>.github.io/car-service/`.
 
-เว็บของคุณจะอยู่ที่ `https://<ชื่อบัญชี>.github.io/car-service/`
+A workflow may have run on its own when the repository was created and shown a red cross, because Pages was not on yet.
+That is fine: run it again as in item 3. If it still fails, check that item 2 is set to GitHub Actions.
 
-ตอนสร้าง repo ใหม่ อาจมี workflow รันเองแล้วขึ้นกากบาทสีแดง เพราะยังไม่ได้เปิด Pages ไม่เป็นไร ทำข้อ 3 ใหม่ได้เลย
-ถ้าทำครบแล้วยังขึ้นกากบาทสีแดง ให้ตรวจว่าขั้นที่ 2 ข้อ 2 เลือก GitHub Actions แล้ว จากนั้นกด Run workflow ใหม่
+## Step 3: Create the private data repository
 
-## ขั้นที่ 3: สร้าง repo เก็บข้อมูล (Private)
+1. Go to [github.com/new](https://github.com/new).
+2. **Repository name**: `car-service-data`.
+3. Choose **Private**. This matters: it keeps your car data hidden.
+4. Turn on **Add a README file** (or Add README).
+5. Press **Create repository**.
 
-1. ไปที่ [github.com/new](https://github.com/new)
-2. **Repository name** ใส่ `car-service-data`
-3. เลือก **Private** สำคัญมาก ข้อมูลรถจะได้ไม่เปิดเผย
-4. เปิด **Add a README file** (หรือ Add README)
-5. กด **Create repository**
+Add nothing else. The site creates the data file in step 5.
 
-ไม่ต้องใส่ไฟล์อะไรเพิ่ม เว็บจะสร้างไฟล์ข้อมูลให้เองในขั้นที่ 5
+## Step 4: Create a key (token) for the site
 
-## ขั้นที่ 4: สร้างกุญแจ (token) ให้เว็บเข้าถึงข้อมูล
+A token is a key that only opens your data repository.
 
-token เหมือนกุญแจที่เปิดได้แค่ repo ข้อมูลของคุณ repo เดียว
+1. Open [new fine-grained token](https://github.com/settings/personal-access-tokens/new)
+   (or account Settings > Developer settings > Personal access tokens > Fine-grained tokens > Generate new token).
+2. **Token name**: `car-service-web`.
+3. **Expiration**: 1 year is a good choice. Note the date: make a new token before it expires.
+4. **Repository access**: **Only select repositories**, then pick `car-service-data` only.
+5. **Permissions** > **Repository permissions** > **Contents**: **Read and write**
+   (Metadata: Read-only is added automatically).
+6. Press **Generate token** and copy the token that starts with `github_pat_`.
 
-1. ไปที่ [สร้าง fine-grained token](https://github.com/settings/personal-access-tokens/new)
-   (หรือ Settings ของบัญชี > Developer settings > Personal access tokens > Fine-grained tokens > Generate new token)
-2. **Token name**: `car-service-web`
-3. **Expiration**: แนะนำ 1 ปี จดวันหมดอายุไว้ ต้องสร้างใหม่ก่อนวันนั้น
-4. **Repository access**: เลือก **Only select repositories** แล้วเลือก `car-service-data` อย่างเดียว
-5. **Permissions** > **Repository permissions** > **Contents**: เลือก **Read and write**
-   (Metadata: Read-only จะถูกเลือกให้อัตโนมัติ)
-6. กด **Generate token** แล้วกดคัดลอก token ที่ขึ้นต้นด้วย `github_pat_`
+The token is shown only once. To keep it, store it in a password manager.
 
-token จะแสดงครั้งเดียว ถ้าจะเก็บไว้ ให้เก็บในโปรแกรมจัดการรหัสผ่าน
+> **Never send the token in a chat, email, issue or file.** Anyone who has it can change your car data.
+> Paste it in only two places: the connect page of your own site, and GitHub Secrets (for reminders).
 
-> **ห้ามส่ง token ในแชต อีเมล issue หรือไฟล์ใด ๆ** ใครได้ token ไปจะแก้ข้อมูลรถของคุณได้
-> ใส่ token ได้แค่ 2 ที่: หน้าเชื่อมต่อของเว็บคุณเอง และ GitHub Secrets (ถ้าใช้การแจ้งเตือน)
+## Step 5: Connect and set up your car
 
-## ขั้นที่ 5: เชื่อมต่อและตั้งค่ารถ
+1. Open `https://<your-account>.github.io/car-service/`.
+2. **GitHub account** is filled in for you. Check that it is your account name.
+3. **Data repo**: `car-service-data` (or the name from step 3).
+4. Paste the token and press **Connect**.
+5. **Set up your car** appears. Fill in:
+   - Car name, e.g. `Toyota Yaris 1.2 white`
+   - Delivery date (for a used car, the first registration date)
+   - Current odometer
+   - Service interval in km and months, from your service book. Many cars use 10,000 km or 6 months.
+   - Automatic or manual gearbox
+6. Tick the items to track. If you remember when one was last done, open **Last done** and enter the date and odometer.
+   Items left blank count from today.
+7. Press **Create car data**.
 
-1. เปิดเว็บ `https://<ชื่อบัญชี>.github.io/car-service/`
-2. ช่อง **บัญชี GitHub** จะกรอกให้เอง ตรวจว่าตรงกับชื่อบัญชีของคุณ
-3. ช่อง **repo ข้อมูล** ใส่ `car-service-data` (หรือชื่อที่ตั้งในขั้นที่ 3)
-4. วาง token แล้วกด **เชื่อมต่อ**
-5. จะขึ้นหน้า **ตั้งค่ารถครั้งแรก** ให้กรอก:
-   - ชื่อรถ เช่น `Toyota Yaris 1.2 สีขาว`
-   - วันรับรถ (รถมือสองใช้วันจดทะเบียนครั้งแรก)
-   - เลขไมล์ตอนนี้
-   - เช็คระยะทุกกี่ km หรือกี่เดือน ดูจากสมุดคู่มือรถ ส่วนใหญ่เป็น 10,000 km หรือ 6 เดือน
-   - เกียร์ออโต้หรือธรรมดา
-6. ติ๊กรายการที่อยากให้ดูแล ถ้าจำได้ว่าทำล่าสุดเมื่อไร ให้กด **ทำล่าสุดเมื่อ** แล้วใส่วันที่และเลขไมล์
-   รายการที่ไม่ได้ใส่ ระบบจะนับเริ่มจากวันนี้
-7. กด **สร้างข้อมูลรถ**
+On a personal device, tick **Remember on this personal device** when connecting, so you do not need the token each time.
 
-เสร็จแล้ว ถ้าใช้เครื่องส่วนตัว ติ๊ก **จำในเครื่องส่วนตัวนี้** ตอนเชื่อมต่อ จะได้ไม่ต้องใส่ token ทุกครั้ง
+The starter intervals are typical values. **Check them against your car's service book** and change them in
+Settings > Manage car and items.
 
-ระยะเปลี่ยนในรายการเริ่มต้นเป็นค่าทั่วไป **ควรเทียบกับสมุดคู่มือรถของคุณ** แล้วแก้ได้ในหน้า ตั้งค่า > จัดการรถและรายการ
+## Everyday use
 
-## ใช้งานประจำวัน
-
-| อยากทำอะไร | ไปที่ |
+| To | Go to |
 |---|---|
-| ดูว่าอะไรใกล้ถึงกำหนด | **ภาพรวม** |
-| จดเลขไมล์ | **ภาพรวม** ช่อง เลขไมล์วันนี้ (จดเดือนละครั้งก็พอ ระบบประมาณระยะที่เหลือให้) |
-| บันทึกการเข้าอู่ | **บันทึก** เลือกวันที่ เลขไมล์ งานที่ทำ อู่ และราคา |
-| แก้หรือลบสิ่งที่จดผิด | **ประวัติ** แล้วแตะรายการนั้น |
-| ดูชีวิตรถทั้งหมด | **ไทม์ไลน์** |
-| เพิ่มรายการ หรือเปลี่ยนระยะ | **ตั้งค่า** > **จัดการรถและรายการ** |
-| เปลี่ยนภาษา | **ตั้งค่า** > ภาษา (ใช้กับข้อความ Discord ด้วย) |
+| See what is due | **Overview** |
+| Log the odometer | **Overview**, Today's odometer (once a month is enough; the app estimates in between) |
+| Log a visit | **Log**: date, odometer, work done, shop and cost |
+| Fix or delete a mistake | **History**, then tap the entry |
+| See the car's whole story | **Timeline** |
+| Add an item or change an interval | **Settings** > **Manage car and items** |
+| Change the language | **Settings** > Language (also used for Discord messages) |
 
-ติดตั้งเป็นแอปบนมือถือ:
-- iPhone: เปิดใน Safari แล้วกด แชร์ > เพิ่มไปยังหน้าจอโฮม
-- Android: เปิดใน Chrome แล้วกด เมนู > ติดตั้งแอป
+Install it as an app:
+- iPhone: open in Safari, then Share > Add to Home Screen
+- Android: open in Chrome, then menu > Install app
 
-## ส่วนเสริม (ไม่บังคับ)
+## Extras (optional)
 
-- [แจ้งเตือนเข้า Discord ทุกเช้า และ bot จดเลขไมล์](docs/discord.md)
-- [คำถามที่พบบ่อย](docs/faq.md)
+- [Daily Discord reminders and an odometer bot](docs/discord.md)
+- [Frequently asked questions](docs/faq.md)
 
-## ความปลอดภัย
+## Security
 
-- repo ข้อมูลต้องเป็น **Private** เสมอ
-- token ให้สิทธิ์เฉพาะ repo ข้อมูล และเฉพาะ Contents เท่านั้น
-- token เก็บแค่ในเบราว์เซอร์ของคุณ ปกติจะหายเมื่อปิดเบราว์เซอร์ เว็บไม่ส่ง token ไปที่อื่นนอกจาก `api.github.com`
-- ถ้าสงสัยว่า token หลุด ให้ลบทิ้งที่หน้า [Fine-grained tokens](https://github.com/settings/personal-access-tokens) แล้วสร้างใหม่
+- Keep the data repository **Private**.
+- The token only reaches the data repository, and only its contents.
+- The token stays in your browser and is cleared when the browser closes, unless you tick remember.
+  The site sends it nowhere except `api.github.com`.
+- If you think a token has leaked, delete it on the [Fine-grained tokens](https://github.com/settings/personal-access-tokens) page and make a new one.
 
-## สำหรับนักพัฒนา
+## For developers
 
-ต้องใช้ Node.js 22 ขึ้นไป ไม่มี dependency สำหรับตัวเว็บ
+Node.js 22 or later. The website has no dependencies.
 
 ```bash
 npm test
@@ -137,7 +138,9 @@ npm test
 npm run serve
 ```
 
-- `web/`: ตัวเว็บ (ES modules ล้วน) ส่วน `web/core/` เป็นตรรกะคำนวณกำหนด ใช้ร่วมกับ notifier และ bot
-- `web/core/starter-items.js`: รายการเริ่มต้นในหน้าตั้งค่าครั้งแรก
-- `notifier/`: งานเตือนรายวัน รันโดย `.github/workflows/remind.yml`
-- `bot/`: Discord bot สำหรับ `/km` และ `/status` รันใน Docker
+- `web/`: the site (plain ES modules). `web/core/` holds the schedule logic shared with the notifier and the bot.
+- `web/core/i18n.js` and `web/core/lang/en.js`: Thai is the source text; English is keyed by the Thai text.
+  The tests fail if any text in the code has no English translation.
+- `web/core/starter-items.js`: the items offered on first setup.
+- `notifier/`: the daily reminder job, run by `.github/workflows/remind.yml`.
+- `bot/`: Discord bot for `/km` and `/status`, run in Docker.

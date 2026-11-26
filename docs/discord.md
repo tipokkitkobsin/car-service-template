@@ -1,104 +1,105 @@
-# แจ้งเตือนเข้า Discord (ไม่บังคับ)
+# Discord reminders (optional)
 
-[English](discord.en.md)
+[ภาษาไทย](discord.th.md)
 
-เมื่อเปิดใช้ ทุกเช้า 09:00 น. GitHub จะตรวจรายการ ถ้ามีงานใกล้ถึงหรือเกินกำหนด จะส่งข้อความเข้าห้อง Discord ที่เลือก
-ถ้าไม่ได้จดเลขไมล์นาน 30 วัน จะส่งข้อความถามเลขไมล์ด้วย
+When turned on, GitHub checks your items every morning at 09:00 (Bangkok time). If something is due soon or overdue,
+it posts to the Discord channel you choose. If no odometer reading has been logged for 30 days, it asks for one.
+Messages use the language set in the app's Settings.
 
-ไม่ต้องมีเครื่องเปิดทิ้งไว้ ใช้ GitHub Actions ฟรี
+No computer needs to stay on: this runs on free GitHub Actions.
 
-## 1. สร้าง bot บน Discord
+## 1. Create a Discord bot
 
-1. ไปที่ [Discord Developer Portal](https://discord.com/developers/applications) แล้วกด **New Application** ตั้งชื่อ เช่น `เช็คระยะ`
-2. เมนูซ้าย **Bot** กด **Reset Token** แล้วคัดลอก token ไว้ ใช้ในขั้นที่ 3
-3. เมนูซ้าย **OAuth2** > **URL Generator**:
-   - Scopes: ติ๊ก `bot` และ `applications.commands`
-   - Bot Permissions: ติ๊ก `View Channels` และ `Send Messages`
-4. คัดลอกลิงก์ด้านล่าง เปิดในเบราว์เซอร์ แล้วเลือก server ของคุณ
+1. Open the [Discord Developer Portal](https://discord.com/developers/applications), press **New Application** and name it, e.g. `Car service`.
+2. In **Bot** on the left, press **Reset Token** and copy the token for step 3.
+3. In **OAuth2** > **URL Generator**:
+   - Scopes: tick `bot` and `applications.commands`
+   - Bot Permissions: tick `View Channels` and `Send Messages`
+4. Copy the link at the bottom, open it in a browser and choose your server.
 
-## 2. หา Channel ID
+## 2. Find the channel ID
 
-1. ใน Discord ไปที่ ตั้งค่าผู้ใช้ > ขั้นสูง (Advanced) แล้วเปิด **Developer Mode**
-2. คลิกขวาที่ห้องที่จะให้แจ้งเตือน แล้วกด **Copy Channel ID**
+1. In Discord, open User Settings > Advanced and turn on **Developer Mode**.
+2. Right-click the channel for reminders and press **Copy Channel ID**.
 
-## 3. ใส่ค่าใน GitHub
+## 3. Add the values in GitHub
 
-ต้องใช้ token อีกตัวให้ GitHub Actions อ่านข้อมูลรถ สร้างแบบเดียวกับขั้นที่ 4 ใน README
-ตั้งชื่อ `car-service-actions` เลือกเฉพาะ repo ข้อมูล และให้ Contents: Read and write
+GitHub Actions needs its own token to read your car data. Create it like step 4 of the README:
+name it `car-service-actions`, select only the data repository, and give Contents: Read and write.
 
-ใน repo ตัวเว็บ (ไม่ใช่ repo ข้อมูล) ไปที่ **Settings** > **Secrets and variables** > **Actions**
+In the **website** repository (not the data repository), open **Settings** > **Secrets and variables** > **Actions**.
 
-แท็บ **Secrets** กด **New repository secret** ทีละตัว:
+On the **Secrets** tab, press **New repository secret** for each:
 
-| Name | ค่า |
+| Name | Value |
 |---|---|
-| `DATA_TOKEN` | GitHub token `car-service-actions` |
-| `DISCORD_BOT_TOKEN` | token ของ bot จากข้อ 1 |
-| `DISCORD_CHANNEL_ID` | Channel ID จากข้อ 2 |
+| `DATA_TOKEN` | the GitHub token `car-service-actions` |
+| `DISCORD_BOT_TOKEN` | the bot token from step 1 |
+| `DISCORD_CHANNEL_ID` | the channel ID from step 2 |
 
-แท็บ **Variables** กด **New repository variable**:
+On the **Variables** tab, press **New repository variable**:
 
-| Name | ค่า |
+| Name | Value |
 |---|---|
 | `REMINDERS_ENABLED` | `true` |
-| `DATA_REPO` | ชื่อ repo ข้อมูล ถ้าไม่ใช่ `car-service-data` |
+| `DATA_REPO` | your data repository name, if it is not `car-service-data` |
 
-## 4. ทดสอบ
+## 4. Test it
 
-1. แท็บ **Actions** > **Daily reminder** > **Run workflow**
-2. ติ๊ก **Send one test message only** แล้วกด **Run workflow**
-3. ห้อง Discord ควรได้ข้อความ "ทดสอบการแจ้งเตือนเช็คระยะ"
+1. **Actions** tab > **Daily reminder** > **Run workflow**.
+2. Tick **Send one test message only** and press **Run workflow**.
+3. The Discord channel should get a test message.
 
-ถ้าไม่ได้ ให้กดดูรายละเอียดของ workflow ที่ล้มเหลว สาเหตุที่พบบ่อย:
-- ชื่อ secret พิมพ์ผิด
-- bot ไม่มีสิทธิ์ส่งข้อความในห้องนั้น
-- token หมดอายุ
+If not, open the failed run to see why. Common causes:
+- a secret name is misspelled
+- the bot cannot post in that channel
+- a token has expired
 
-ปิดการแจ้งเตือนได้โดยเปลี่ยน `REMINDERS_ENABLED` เป็น `false`
+To turn reminders off, set `REMINDERS_ENABLED` to `false`.
 
-### ถ้าแจ้งเตือนหยุดไปเอง
+### If reminders stop on their own
 
-GitHub จะหยุดงานตั้งเวลาใน repo public ที่ไม่มีการแก้ไขอะไรเลย 60 วัน และจะส่งอีเมลเตือนก่อน
-ถ้าเจอ ให้ไปที่แท็บ **Actions** > **Daily reminder** แล้วกด **Enable workflow**
-หรือแก้ไฟล์อะไรก็ได้ใน repo ตัวเว็บสักครั้ง เช่น เพิ่มโน้ตใน README ก่อนครบ 60 วัน
+GitHub pauses scheduled workflows in a public repository after 60 days without any change, and emails you first.
+If that happens, open **Actions** > **Daily reminder** and press **Enable workflow**.
+Or change any file in the website repository, such as a note in the README, before the 60 days are up.
 
 ---
 
-# Bot จดเลขไมล์ใน Discord (ไม่บังคับ สำหรับคนที่มีเครื่องเปิดตลอด)
+# Odometer bot in Discord (optional, needs an always-on machine)
 
-ใช้คำสั่ง `/km 85000` เพื่อจดเลขไมล์ และ `/status` เพื่อดูงานค้างใน Discord ได้เลย
-ต้องมีเครื่องที่รัน Docker ได้และเปิดตลอด เช่น NAS (Synology, QNAP), Raspberry Pi หรือ VPS
-bot ต่อออกไปหา Discord และ GitHub อย่างเดียว ไม่ต้องเปิด port
+Use `/km 85000` to log the odometer and `/status` to see what is due, right in Discord.
+You need a machine that runs Docker and stays on: a NAS (Synology, QNAP), a Raspberry Pi, or a VPS.
+The bot only connects out to Discord and GitHub, so no port needs to be opened.
 
-ใช้ bot ตัวเดียวกับข้อ 1 ได้ และต้องมี:
-- Server ID: คลิกขวาที่ชื่อ server แล้วกด Copy Server ID
-- User ID ของคุณ: คลิกขวาที่ชื่อตัวเอง แล้วกด Copy User ID
-- GitHub token ที่ให้สิทธิ์ repo ข้อมูล สร้างใหม่ชื่อ `car-service-bot`
+You can reuse the bot from step 1. You also need:
+- the server ID: right-click the server name, then Copy Server ID
+- your user ID: right-click your own name, then Copy User ID
+- a GitHub token with access to the data repository: make a new one named `car-service-bot`
 
-bot ตอบเฉพาะคุณ และตอบเฉพาะในห้องที่ตั้งไว้
+The bot only answers you, and only in the channel you set.
 
-บนเครื่องที่จะรัน bot (เปลี่ยน `<ชื่อบัญชี>` และชื่อ repo ให้ตรงของคุณ):
+On the machine that will run the bot (replace `<your-account>` and the repository name with yours):
 
 ```bash
-curl -L https://github.com/<ชื่อบัญชี>/car-service/archive/refs/heads/main.tar.gz | tar xz
+curl -L https://github.com/<your-account>/car-service/archive/refs/heads/main.tar.gz | tar xz
 ```
 
 ```bash
 cd car-service-main/bot && bash setup-env.sh
 ```
 
-`setup-env.sh` จะถามค่าทีละช่อง ส่วน token จะพิมพ์แบบซ่อน ไม่ขึ้นในประวัติคำสั่ง จากนั้นรัน:
+`setup-env.sh` asks for each value. Tokens are typed hidden and stay out of the shell history. Then run:
 
 ```bash
 sudo docker compose up -d --build
 ```
 
-ดูว่า bot ทำงานไหม:
+Check that it runs:
 
 ```bash
 sudo docker logs --tail 5 car-service-bot
 ```
 
-ควรเห็น `Bot ready`
+You should see `Bot ready`.
 
-ห้ามแชร์ไฟล์ `bot/.env` เพราะมี token อยู่ข้างใน
+Never share `bot/.env`: it holds your tokens.

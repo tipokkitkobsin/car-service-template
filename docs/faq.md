@@ -1,46 +1,47 @@
-# คำถามที่พบบ่อย
+# Frequently asked questions
 
-[English](faq.en.md)
+[ภาษาไทย](faq.th.md)
 
-**เปิดเว็บแล้วขึ้น "ไม่พบ repo ข้อมูล หรือ token ไม่มีสิทธิ์"**
-ตรวจตามลำดับ:
-1. ชื่อบัญชีและชื่อ repo ในหน้าเชื่อมต่อสะกดถูก
-2. ตอนสร้าง token เลือก repo ข้อมูลไว้ใน Repository access
-3. Contents เป็น Read and write
+**"Data repo not found, or the token has no access"**
+Check, in order:
+1. the account and repository names on the connect page
+2. the token's Repository access includes the data repository
+3. Contents is set to Read and write
 
-**ขึ้น "GitHub token ใช้ไม่ได้"**
-token หมดอายุหรือถูกลบ ให้สร้างใหม่ตามขั้นที่ 4 แล้วเชื่อมต่อใหม่
+**"The GitHub token does not work"**
+The token has expired or was deleted. Make a new one (README step 4) and connect again.
 
-**ตั้งค่ารถผิด อยากเริ่มใหม่**
-ทำได้ 2 ทาง:
-- แก้ชื่อรถ วันรับรถ และรายการ ในหน้า ตั้งค่า > จัดการรถและรายการ
-- เริ่มใหม่ทั้งหมด: ใน repo ข้อมูล ลบไฟล์ `data/car.json` แล้วเปิดเว็บใหม่ จะขึ้นหน้าตั้งค่าครั้งแรกอีกครั้ง
-  วิธีนี้ประวัติที่จดไว้จะหายทั้งหมด
+**I set up the car wrong and want to start over**
+Either:
+- edit the car name, delivery date and items in Settings > Manage car and items, or
+- start from scratch: delete `data/car.json` in the data repository and open the site again.
+  The first-run setup appears again. Everything you logged is lost.
 
-**ลบรายการไม่ได้**
-รายการที่มีประวัติการเข้าอู่ลบไม่ได้ เพื่อไม่ให้ประวัติเสีย ถ้าไม่ใช้แล้ว ให้เปลี่ยนแบบการเตือนเป็น "จดอายุอย่างเดียว"
+**I cannot delete an item**
+Items with visit history cannot be deleted, so the history stays correct. If you no longer use one,
+change its reminder type to "Track age only".
 
-**รายการไหนควรเป็นแบบไหน**
-- ตามระยะ km หรือเดือน: น้ำมันเครื่อง กรอง หัวเทียน น้ำมันเกียร์ (อย่างใดถึงก่อนถือว่าครบ)
-- ตามจำนวนวัน: แบตเตอรี่ (เตือนแบบเบา ๆ เพราะอายุแบตไม่แน่นอน)
-- ทุกปีในเดือนที่กำหนด: กรองแอร์ ต่อภาษี
-- จดอายุอย่างเดียว: ยาง ผ้าเบรก โช็ค (ดูว่าใช้มากี่ km กี่ปีแล้ว)
-- เหตุการณ์: ของแต่ง อุบัติเหตุ งานซ่อม (ขึ้นในไทม์ไลน์)
+**Which reminder type fits which item?**
+- By km or months: engine oil, filters, spark plugs, gearbox oil (due at whichever comes first)
+- By days: battery (a soft reminder, since battery life varies)
+- Every year in a set month: cabin filter, road tax
+- Track age only: tyres, brake pads, shock absorbers (shows how many km and years they have done)
+- Event: mods, accidents, repairs (shown on the timeline)
 
-**เปลี่ยนภาษาแล้ว ชื่อรายการเปลี่ยนตามไหม**
-ไม่เปลี่ยน ชื่อที่พิมพ์เอง และรายการเริ่มต้นที่สร้างตอนตั้งค่า จะเป็นภาษาที่บันทึกไว้ตอนนั้น
-เปลี่ยนชื่อได้ในหน้า ตั้งค่า > จัดการรถและรายการ
+**Does changing the language translate my items?**
+No. Names you typed, and the starter items created at setup, stay as they were saved. Rename them in
+Settings > Manage car and items if you like.
 
-**สำรองข้อมูลยังไง**
-ข้อมูลอยู่ใน GitHub และเก็บประวัติทุกครั้งที่แก้ไขอยู่แล้ว ถ้าต้องการไฟล์ ให้กด ตั้งค่า > ดาวน์โหลดสำรอง
+**How do I back up?**
+Your data is on GitHub, which keeps every change. For a file copy, press Settings > Download backup.
 
-**ใช้หลายเครื่องได้ไหม**
-ได้ เปิดเว็บแล้วใส่ token ในแต่ละเครื่อง ข้อมูลจะตรงกันทุกเครื่อง
+**Can I use several devices?**
+Yes. Open the site and enter a token on each one. The data is the same everywhere.
 
-**มีรถ 2 คัน**
-สร้าง repo ข้อมูลอีกอันหนึ่ง เช่น `car-service-data-2` และ token ที่เลือกทั้ง 2 repo
-จากนั้นตอนเชื่อมต่อให้ใส่ชื่อ repo ของคันที่อยากดู
+**I have two cars**
+Make a second data repository, e.g. `car-service-data-2`, and a token that covers both.
+When connecting, enter the repository of the car you want to see.
 
-**template มีเวอร์ชันใหม่ อัปเดตยังไง**
-repo ที่สร้างจาก template จะไม่อัปเดตตามอัตโนมัติ ถ้าอยากได้ของใหม่ ให้คัดลอกโฟลเดอร์ `web/` จาก template ไปทับของคุณ
-ข้อมูลรถไม่หาย เพราะอยู่ใน repo ข้อมูลแยกกัน
+**The template has a new version. How do I update?**
+A repository made from a template does not update on its own. Copy the `web/` folder from the template over yours.
+Your car data is safe: it lives in the separate data repository.
